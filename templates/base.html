@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Roland-Garros{% endblock title %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script defer src="/static/cdn.min.js"></script>
+    <script src="/static/script.js"></script>
+</head>
+<body>
+    {% block body %}{% endblock %}
+    <div x-data x-text="'Dernière mise à jour : ' + format_date($store.lastUpdate)" x-show="$store.data.matches"></div>
+    <div x-data x-show="! $store.data.matches">Chargement en cours...</div>
+    <template x-data x-for="match in $store.data.matches">
+        {% include "match_block.html" %}
+    </template>
+    <script>
+        document.addEventListener("alpine:init", function() {
+            Alpine.store("data", {});
+        });
+        async function fetch_data() {
+            var resp = await fetch({% block fetch_url %}"/polling"{% endblock fetch_url %});
+            var data = await resp.json();
+            Alpine.store("data", data);
+            Alpine.store("lastUpdate", new Date);
+        }
+        setInterval(fetch_data, 5000);
+        setTimeout(fetch_data);
+    </script>
+</body>
+</html>

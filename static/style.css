@@ -1,0 +1,19 @@
+.green, .won {
+    color: green;
+}
+.red, .lost {
+    color: red;
+}
+.blue {
+    color: blue;
+}
+.rank, .tie-break {
+    vertical-align: super;
+    font-size: smaller;
+}
+table {
+    border-collapse: collapse;
+}
+td {
+    padding-right: 0.5em;
+}
