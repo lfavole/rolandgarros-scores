@@ -37,7 +37,7 @@ function format_player_name(player) {
 function winner_class(obj, match) {
     if(obj.inProgress) return "";
     var status = (match || obj).matchData && (match || obj).matchData.status;
-    if(status != "FINISHED") return "";
+    if(status && status != "FINISHED") return "";
     return obj.winner ? "won" : "lost";
 }
 function format_date(date) {
