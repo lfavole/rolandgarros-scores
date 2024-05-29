@@ -49,7 +49,7 @@ keys_to_keep = {
                 "durationInMinutes": 1,
                 "isNightSession": 1,
                 "notBefore": 1,
-                "round": 1,
+                "roundLabel": 1,
                 "startingAt": 1,
                 "status": 1,
                 "typeLabel": 1,
@@ -98,10 +98,6 @@ def cleanup_rg_data(rg_data):
         return data
 
     recursive_cleanup(rg_data, keys_to_keep)
-    # for match in rg_data["matches"]:
-    #     for key in list(match):
-    #         if key not in ("id", "matchData", "teamA", "teamB"):
-    #             del match[key]
     return rg_data
 
 
