@@ -71,6 +71,10 @@
 .website .set:not(.won, .lost) {
     color: #cc4e0e;
 }
+.website .tie-break {
+    vertical-align: super;
+    font-size: smaller;
+}
 .website .points {
     color: #cc4e0e;
     font-weight: bold;
