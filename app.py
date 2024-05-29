@@ -2,7 +2,6 @@ from copy import deepcopy
 from functools import wraps
 import gzip
 from hashlib import md5
-import json
 import os
 from pathlib import Path
 from time import time
@@ -40,6 +39,7 @@ def compress(response):
 
 
 keys_to_keep = {
+    "test": 1,
     "matches": [
         {
             "id": 1,
@@ -127,7 +127,7 @@ def check_hash(f):
     @wraps(f)
     def decorator(*args, **kwargs):
         ret = f(*args, **kwargs)
-        ret["hash"] = md5(json.dumps(ret).encode()).hexdigest()[0:8]
+        ret["hash"] = md5(app.json.dumps(ret).encode()).hexdigest()[0:8]
         if ret["hash"] == request.args.get("hash"):
             return Response("null", mimetype="application/json")
         return ret
