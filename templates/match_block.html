@@ -1,41 +1,40 @@
-<div class="match" x-data="{ matchData: match.matchData, status: match.matchData.status }">
+<a class="match" x-data="{ matchData: match.matchData, status: match.matchData.status }" :href="Alpine.store('nolinks') ? '#' : '/match/' + match.id" @click="Alpine.store('nolinks') && $event.preventDefault()">
     <div>
-        <span x-text="matchData.typeLabel"></span> -
-        <span x-text="matchData.roundLabel"></span> -
-        <span x-text="matchData.isNightSession ? '🌙' : '☀️'"></span>
-        <a :href="'/match/' + match.id" x-show="!Alpine.store('nolinks')">Voir plus de détails</a>
+        <span class="match-type" x-text="matchData.typeLabel"></span>
+        <span x-show="style != 'website' && matchData.dateSchedule" x-text="' - ' + format_rg_date(matchData.dateSchedule)"></span>
+        <span x-text="matchData.isNightSession ? '🌙' : ''"></span>
+        <span class="status" x-text="STATUSES_LABELS[status] || status" :class="STATUSES_COLORS[status] || 'red'"></span>
     </div>
     <div>
-        <span x-text="matchData.courtName"></span>
-        (<!--
-            --><span x-text="STATUSES_LABELS[status] || status" :class="STATUSES_COLORS[status] || 'red'"></span><!--
-            --><span x-show="matchData.dateSchedule" x-text="' - ' + format_rg_date(matchData.dateSchedule)"></span><!--
-            --><span x-show="matchData.notBefore" x-text="' - Pas avant ' + matchData.notBefore"></span><!--
-            --><span x-data="{ duration: matchData.durationInMinutes }" x-show="duration" x-text="' - ' + format_duration(duration)"></span><!--
-        -->)
+        <span class="court-name" x-text="matchData.courtName"></span> -
+        <span class="round-label" x-text="matchData.roundLabel"></span>
+        <span class="duration" x-data="{ duration: matchData.durationInMinutes }" x-show="duration" x-text="format_duration(duration, style == 'website')"></span>
     </div>
     <table>
-        <template x-data="{ teams: [match.teamA, match.teamB] }" x-for="team in teams">
+        <template x-data="{ teams: [match.teamA, match.teamB] }" x-for="(team, i) in teams">
             <tr class="team">
-                <td class="has-service" x-text="team.hasService ? '//' : ''"></td>
+                <td class="has-service" x-show="style != 'website'" :class="team.hasService ? 'yes' : ''" x-text="team.hasService ? '//' : ''"></td>
                 <td class="names" :class="winner_class(team, match)">
                     <template x-data="{ players: team.players }" x-for="player in players">
-                        <div class="name" x-text="format_player_name(player)"></div>
+                        <span class="name">
+                            <span class="first-name" x-text="style == 'website' ? player.firstName.substring(0, 1) + '.' : player.firstName + ' '"></span><!--
+                            --><span class="last-name" x-text="format_last_name(player)"></span>
+                            <span class="rank" x-show="team.seed" x-text="team.seed"></span>
+                            <br>
+                        </span>
                     </template>
                 </td>
-                <td>
-                    <span class="rank" :class="winner_class(team, match)" x-show="team.seed" x-text="team.seed"></span>
-                </td>
+                <td class="has-service" x-show="style == 'website'" :class="team.hasService ? 'yes' : ''" x-text="team.hasService ? '//' : ''"></td>
                 <template x-for="set in team.sets">
                     <td class="set" x-data="{ tieBreak: set.tieBreak, score: set.score }" :class="winner_class(set)">
-                        <span class="tie-break" x-show="tieBreak" x-text="tieBreak"></span><!--
-                        --><span class="number" x-text="score"></span>
+                        <span class="number" x-text="score"></span><!--
+                        --><span class="tie-break" x-show="tieBreak" x-text="tieBreak"></span>
                     </td>
                 </template>
-                <td class="points" x-show="matchData.status == 'IN_PROGRESS'" x-text="team.points"></td>
+                <td class="points" x-show="status == 'IN_PROGRESS'" x-text="team.points"></td>
                 <td class="end-cause" x-data="{ endCause: matchData.endCause }" x-show="endCause" x-text="ENDCAUSES_LABELS[endCause] || endCause"></td>
+                <td rowspan="2" x-show="i == 0 && matchData.notBefore" x-text="'Pas avant ' + matchData.notBefore"></td>
             </tr>
         </template>
     </table>
-    <br>
-</div>
+</a>

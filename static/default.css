@@ -1,0 +1,19 @@
+.default .match {
+    border: 1px solid black;
+}
+.default .green, .default .won {
+    color: green;
+}
+.default .red, .default .lost {
+    color: red;
+}
+.default .blue {
+    color: blue;
+}
+.default .rank, .default .tie-break {
+    vertical-align: super;
+    font-size: smaller;
+}
+.default td {
+    padding-right: 0.5em;
+}

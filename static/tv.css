@@ -1,0 +1,39 @@
+.tv .match {
+    background-color: #0d573d;
+    color: white;
+    padding: 0;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.tv td {
+    padding: 4px 8px;
+    text-align: center;
+}
+
+.tv .has-service {
+    padding-right: 0;
+}
+.tv .match > div, .tv .first-name, .tv .name br, .tv .rank, .tv .tie-break, .tv td[rowspan] {
+    display: none;
+}
+.tv .names {
+    text-align: left;
+    width: unset;
+    min-width: 100px;
+}
+.tv .names > span:nth-of-type(2)::before {
+    content: " & ";
+}
+.tv .set.lost {
+    opacity: 0.5;
+}
+.tv .set:not(.won, .lost) {
+    background-color: #31b56d;
+}
+.tv .points {
+    background-color: #e0dfe0;
+    color: #777777;
+    padding: 4px 0;
+    width: 1.5em;
+}

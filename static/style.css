@@ -1,19 +1,20 @@
-.green, .won {
-    color: green;
+body {
+    font-family: "Open Sans", Arial, Helvetica, sans-serif;
 }
-.red, .lost {
-    color: red;
+p {
+    margin: 1em 0;
 }
-.blue {
-    color: blue;
-}
-.rank, .tie-break {
-    vertical-align: super;
-    font-size: smaller;
+p.matches {
+    margin-top: 2em;
 }
 table {
     border-collapse: collapse;
 }
-td {
-    padding-right: 0.5em;
+
+.match {
+    color: unset;
+    text-decoration: unset;
+    display: inline-block;
+    padding: 12px;
+    margin: 0 20px 20px 0;
 }

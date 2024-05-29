@@ -5,16 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Roland-Garros{% endblock title %}</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/default.css">
+    <link rel="stylesheet" href="/static/website.css">
+    <link rel="stylesheet" href="/static/tv.css">
     <script defer src="/static/cdn.min.js"></script>
     <script src="/static/script.js"></script>
 </head>
-<body>
+<body x-data="{ style: 'website' }" :class="style">
     {% block body %}{% endblock %}
-    <div x-data x-text="'Dernière mise à jour : ' + format_date($store.lastUpdate)" x-show="$store.data.matches"></div>
-    <div x-data x-show="! $store.data.matches">Chargement en cours...</div>
-    <template x-data x-for="match in $store.data.matches">
-        {% include "match_block.html" %}
-    </template>
+    <p x-data x-text="'Dernière mise à jour : ' + format_date($store.lastUpdate)" x-show="$store.data.matches"></p>
+    <p x-data x-show="! $store.data.matches">Chargement en cours...</p>
+    <form action="javascript:;">
+        Style :
+        <label>
+            <input type="radio" x-model="style" name="style" value="default">
+            Par défaut
+        </label>
+        <label>
+            <input type="radio" x-model="style" name="style" value="website" checked>
+            Site Roland-Garros
+        </label>
+        <label>
+            <input type="radio" x-model="style" name="style" value="tv">
+            TV
+        </label>
+    </form>
+    <p class="matches">
+        <template x-data x-for="match in $store.data.matches">
+            {% include "match_block.html" %}
+        </template>
+    </p>
     <script>
         document.addEventListener("alpine:init", function() {
             Alpine.store("data", {hash: ""});

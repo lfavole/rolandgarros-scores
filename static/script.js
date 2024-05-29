@@ -1,7 +1,3 @@
-document.addEventListener("alpine:init", function() {
-    Alpine.store("lastUpdate", new Date);
-});
-
 var STATUSES_LABELS = {
     "ABANDON": "abandon",
     "CANCELED": "reporté",
@@ -26,13 +22,13 @@ var ENDCAUSES_LABELS = {
     "w/o.": "Forfait",
 };
 function format_rg_date(date) {
-    return date.replace(/^(\d\d\d\d)(\d\d)(\d\d)$/, '$3/$2/$1');
+    return date.replace(/^(\d\d\d\d)(\d\d)(\d\d)$/, "$3/$2/$1");
 }
-function format_duration(duration) {
-    return Math.floor(duration / 60) + ':' + (duration % 60 < 10 ? '0': '') + duration % 60;
+function format_duration(duration, use_h) {
+    return Math.floor(duration / 60) + (use_h ? "h" : ":") + (duration % 60 < 10 ? "0": "") + duration % 60;
 }
-function format_player_name(player) {
-    return player["firstName"] + " " + player["lastName"].toLowerCase().replace(/^\w|\s\w|-\w|'\w/g, (char) => char.toUpperCase());
+function format_last_name(player) {
+    return player.lastName.toLowerCase().replace(/^\w|\s\w|-\w|'\w/g, (char) => char.toUpperCase());
 }
 function winner_class(obj, match) {
     if(obj.inProgress) return "";
