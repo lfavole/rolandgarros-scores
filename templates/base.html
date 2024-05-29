@@ -49,8 +49,10 @@
             if(data == null) return;
             Alpine.store("data", data);
         }
-        setInterval(fetch_data, 5000);
-        setTimeout(fetch_data);
+        window.addEventListener("DOMContentLoaded", function() {
+            setTimeout(fetch_data);
+            setInterval(fetch_data, 5000);
+        });
     </script>
 </body>
 </html>
