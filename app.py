@@ -63,6 +63,7 @@ keys_to_keep = {
                         "lastName": 1,
                     }
                 ],
+                "points": 1,
                 "seed": 1,
                 "sets": [
                     {
