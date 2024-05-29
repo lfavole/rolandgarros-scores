@@ -11,7 +11,10 @@
     <script defer src="/static/cdn.min.js"></script>
     <script src="/static/script.js"></script>
 </head>
-<body x-data="{ style: 'website' }" :class="style">
+<body x-data="{ style: 'website', interval: 5, intv: null }" x-effect="
+        if(intv) {clearInterval(intv); intv = null;}
+        if(interval > 0) {intv = setInterval(fetch_data, interval * 1000);}
+    " :class="style">
     {% block body %}{% endblock %}
     <p x-data x-text="'Dernière mise à jour : ' + format_date($store.lastUpdate)" x-show="$store.data.matches"></p>
     <p x-data x-show="! $store.data.matches">Chargement en cours...</p>
@@ -29,6 +32,12 @@
             <input type="radio" x-model="style" name="style" value="tv">
             TV
         </label>
+        <br>
+        <label>
+            Intervalle :
+            <input type="number" min="0" step="1" size="5" x-model.number="interval">
+            secondes
+        </label>
     </form>
     <p class="matches">
         <template x-data x-for="match in $store.data.matches">
@@ -44,15 +53,16 @@
                 {% block fetch_url %}"/polling"{% endblock fetch_url %}
                 + "?hash=" + Alpine.store("data").hash
             );
-            var data = await resp.json();
             Alpine.store("lastUpdate", new Date);
-            if(data == null) return;
+            try {
+                var data = await resp.json();
+                if(!data) return;
+            } catch(e) {return;}
             Alpine.store("data", {});
             setTimeout(() => Alpine.store("data", data), 50);
         }
         window.addEventListener("DOMContentLoaded", function() {
             setTimeout(fetch_data);
-            setInterval(fetch_data, 5000);
         });
     </script>
 </body>
