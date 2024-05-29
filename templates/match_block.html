@@ -24,7 +24,7 @@
                     </template>
                 </td>
                 <td>
-                    <span class="rank" x-show="team.seed" x-text="team.seed"></span>
+                    <span class="rank" :class="winner_class(team, match)" x-show="team.seed" x-text="team.seed"></span>
                 </td>
                 <template x-for="set in team.sets">
                     <td class="set" x-data="{ tieBreak: set.tieBreak, score: set.score }" :class="winner_class(set)">

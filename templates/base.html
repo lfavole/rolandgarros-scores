@@ -17,13 +17,17 @@
     </template>
     <script>
         document.addEventListener("alpine:init", function() {
-            Alpine.store("data", {});
+            Alpine.store("data", {hash: ""});
         });
         async function fetch_data() {
-            var resp = await fetch({% block fetch_url %}"/polling"{% endblock fetch_url %});
+            var resp = await fetch(
+                {% block fetch_url %}"/polling"{% endblock fetch_url %}
+                + "?hash=" + Alpine.store("data").hash
+            );
             var data = await resp.json();
-            Alpine.store("data", data);
             Alpine.store("lastUpdate", new Date);
+            if(data == null) return;
+            Alpine.store("data", data);
         }
         setInterval(fetch_data, 5000);
         setTimeout(fetch_data);

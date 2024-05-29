@@ -1,7 +1,10 @@
+from functools import wraps
+from hashlib import md5
+import json
 import os
 from pathlib import Path
 from time import time
-from flask import Flask, Response, render_template, send_file
+from flask import Flask, Response, render_template, request, send_file
 import requests
 from werkzeug.exceptions import NotFound
 
@@ -20,11 +23,25 @@ def get_rg_data():
     try:
         req = requests.get("https://www.rolandgarros.com/api/fr-fr/polling", timeout=3)
         rg_data = req.json()
+        rg_data_timestamp = time()
         return rg_data
     except (OSError, ValueError) as err:
         if not rg_data:
             raise ValueError("Can't fetch Roland Garros data") from err
         return rg_data
+
+
+def check_hash(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        ret = f(*args, **kwargs)
+        ret["hash"] = md5(json.dumps(ret).encode()).hexdigest()[0:8]
+        print(ret["hash"], request.args.get("hash"))
+        if ret["hash"] == request.args.get("hash"):
+            return Response("null", mimetype="application/json")
+        return ret
+
+    return decorator
 
 
 @app.route("/static/cdn.min.js")
@@ -53,11 +70,13 @@ def match(match_id):
 
 
 @app.route("/polling")
+@check_hash
 def polling():
     return get_rg_data()
 
 
 @app.route("/polling/match/<match_id>")
+@check_hash
 def polling_match(match_id):
     for match in get_rg_data()["matches"]:
         if match["id"] == match_id:
