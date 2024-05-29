@@ -37,7 +37,7 @@
     </p>
     <script>
         document.addEventListener("alpine:init", function() {
-            Alpine.store("data", {hash: ""});
+            Alpine.store("data", {matches: [], hash: ""});
         });
         async function fetch_data() {
             var resp = await fetch(
@@ -47,7 +47,8 @@
             var data = await resp.json();
             Alpine.store("lastUpdate", new Date);
             if(data == null) return;
-            Alpine.store("data", data);
+            Alpine.store("data", {});
+            setTimeout(() => Alpine.store("data", data), 50);
         }
         window.addEventListener("DOMContentLoaded", function() {
             setTimeout(fetch_data);
