@@ -1,14 +1,109 @@
+from copy import deepcopy
 from functools import wraps
+import gzip
 from hashlib import md5
 import json
 import os
 from pathlib import Path
 from time import time
+import zlib
 from flask import Flask, Response, render_template, request, send_file
 import requests
 from werkzeug.exceptions import NotFound
 
 app = Flask(__name__)
+
+app.json.ensure_ascii = False  # type: ignore
+app.json.compact = True  # type: ignore
+
+
+@app.after_request
+def compress(response):
+    try:
+        content = response.data
+    except RuntimeError:
+        # Can't get data because it's a stream
+        return response
+
+    accept_encoding = request.headers.get("Accept-Encoding", "")
+
+    if "deflate" in accept_encoding:
+        content = zlib.compress(content, 5)
+        response.headers["Content-Encoding"] = "deflate"
+    elif "gzip" in accept_encoding:
+        content = gzip.compress(content, 5)
+        response.headers["Content-Encoding"] = "gzip"
+
+    response.data = content
+    response.headers["Content-Length"] = len(content)
+    return response
+
+
+keys_to_keep = {
+    "matches": [
+        {
+            "id": 1,
+            "matchData": {
+                "courtName": 1,
+                "dateSchedule": 1,
+                "durationInMinutes": 1,
+                "isNightSession": 1,
+                "notBefore": 1,
+                "round": 1,
+                "startingAt": 1,
+                "status": 1,
+                "typeLabel": 1,
+            },
+            "teamA": {
+                "endCause": 1,
+                "hasService": 1,
+                "players": [
+                    {
+                        "firstName": 1,
+                        "lastName": 1,
+                    }
+                ],
+                "seed": 1,
+                "sets": [
+                    {
+                        "inProgress": 1,
+                        "score": 1,
+                        "tieBreak": 1,
+                        "winner": 1,
+                    }
+                ],
+                "winner": 1,
+            },
+        }
+    ]
+}
+keys_to_keep["matches"][0]["teamB"] = keys_to_keep["matches"][0]["teamA"]
+
+
+def cleanup_rg_data(rg_data):
+    rg_data = {"matches": deepcopy(rg_data["matches"])}
+
+    def recursive_cleanup(data, schema):
+        if isinstance(data, list):
+            for item in data:
+                recursive_cleanup(item, schema[0])
+            return data
+
+        for key in list(data):
+            if key not in schema:
+                del data[key]
+            elif key in schema and isinstance(schema[key], (list, dict)):
+                recursive_cleanup(data[key], schema[key])
+
+        return data
+
+    recursive_cleanup(rg_data, keys_to_keep)
+    # for match in rg_data["matches"]:
+    #     for key in list(match):
+    #         if key not in ("id", "matchData", "teamA", "teamB"):
+    #             del match[key]
+    return rg_data
+
 
 rg_data = {}
 rg_data_timestamp = 0
@@ -22,7 +117,7 @@ def get_rg_data():
 
     try:
         req = requests.get("https://www.rolandgarros.com/api/fr-fr/polling", timeout=3)
-        rg_data = req.json()
+        rg_data = cleanup_rg_data(req.json())
         rg_data_timestamp = time()
         return rg_data
     except (OSError, ValueError) as err:
@@ -36,7 +131,6 @@ def check_hash(f):
     def decorator(*args, **kwargs):
         ret = f(*args, **kwargs)
         ret["hash"] = md5(json.dumps(ret).encode()).hexdigest()[0:8]
-        print(ret["hash"], request.args.get("hash"))
         if ret["hash"] == request.args.get("hash"):
             return Response("null", mimetype="application/json")
         return ret
