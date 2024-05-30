@@ -17,8 +17,8 @@
                 <td class="names" :class="winner_class(team, match)">
                     <template x-data="{ players: team.players }" x-for="player in players">
                         <span class="name">
-                            <img x-show="style == 'website'" class="player" :src="player.imageUrl">
-                            <img x-show="style == 'website'" class="flag" :alt="player.country" :src="'https://www.rolandgarros.com/img/flags-svg/' + player.country + '.svg'">
+                            <img x-show="style == 'website' && player.imageUrl" class="player" :src="player.imageUrl">
+                            <img x-show="style == 'website' && player.country" class="flag" :alt="player.country" :src="'https://www.rolandgarros.com/img/flags-svg/' + player.country + '.svg'">
                             <span class="first-name" x-text="style == 'website' ? player.firstName.substring(0, 1) + '.' : player.firstName + ' '"></span><!--
                             --><span class="last-name" x-text="format_last_name(player)"></span>
                             <span class="rank" x-show="team.seed" x-text="team.seed"></span>
