@@ -261,7 +261,7 @@ def polling():
 @app.route("/polling/match/<match_id>")
 @check_hash
 def polling_match(match_id):
-    for match in get_rg_data()["matches"]:
+    for match in get_rg_data(request.args.get("style"))["matches"]:
         if match["id"] == match_id:
             return {"matches": [match]}
     raise NotFound
