@@ -55,6 +55,20 @@
 .website .name {
     font-weight: bold;
 }
+.website .player {
+    background-color: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 50%;
+    height: 2.25em;
+    width: 2.25em;
+}
+.website .flag {
+    border-radius: 3px;
+    box-shadow: 0 0 1px 1px #f8f8f8;
+    height: 0.8125em;
+    margin: 1.25em 0.5em 0.25em -0.25em;
+    width: 1.1875em;
+}
 .website .rank::before {
     content: "(";
 }

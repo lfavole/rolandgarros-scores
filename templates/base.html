@@ -13,7 +13,10 @@
 </head>
 <body x-data="{ style: 'website', interval: 5, intv: null }" x-effect="
         if(intv) {clearInterval(intv); intv = null;}
-        if(interval > 0) {intv = setInterval(fetch_data, interval * 1000);}
+        if(interval > 0) {
+            intv = setInterval(() => fetch_data(style), interval * 1000);
+            setTimeout(() => fetch_data(style));
+        }
     " :class="style">
     {% block body %}{% endblock %}
     <p x-data x-text="'Dernière mise à jour : ' + format_date($store.lastUpdate)" x-show="$store.data.matches"></p>
@@ -48,10 +51,10 @@
         document.addEventListener("alpine:init", function() {
             Alpine.store("data", {matches: [], hash: ""});
         });
-        async function fetch_data() {
+        async function fetch_data(style) {
             var resp = await fetch(
                 {% block fetch_url %}"/polling"{% endblock fetch_url %}
-                + "?hash=" + Alpine.store("data").hash
+                + "?style=" + style + "&hash=" + Alpine.store("data").hash
             );
             Alpine.store("lastUpdate", new Date);
             try {
@@ -79,9 +82,6 @@
             Alpine.store("data", {});
             setTimeout(() => Alpine.store("data", data), 50);
         }
-        window.addEventListener("DOMContentLoaded", function() {
-            setTimeout(fetch_data);
-        });
     </script>
 </body>
 </html>

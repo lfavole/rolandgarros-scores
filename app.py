@@ -61,8 +61,10 @@ keys_to_keep = {
                 "hasService": 1,
                 "players": [
                     {
+                        "country": lambda style: style == "website",
                         "firstName": 1,
                         "lastName": 1,
+                        "imageUrl": lambda style: style == "website",
                     }
                 ],
                 "points": 1,
@@ -83,7 +85,7 @@ keys_to_keep = {
 keys_to_keep["matches"][0]["teamB"] = keys_to_keep["matches"][0]["teamA"]
 
 
-def cleanup_rg_data(rg_data):
+def cleanup_rg_data(rg_data, style):
     rg_data = {"matches": deepcopy(rg_data["matches"])}
 
     def recursive_cleanup(data, schema):
@@ -95,8 +97,11 @@ def cleanup_rg_data(rg_data):
         for key in list(data):
             if key not in schema:
                 del data[key]
-            elif key in schema and isinstance(schema[key], (list, dict)):
-                recursive_cleanup(data[key], schema[key])
+            elif key in schema:
+                if isinstance(schema[key], (list, dict)):
+                    recursive_cleanup(data[key], schema[key])
+                elif callable(schema[key]) and not schema[key](style):
+                    del data[key]
 
         return data
 
@@ -109,16 +114,16 @@ rg_data_timestamp = 0
 POLLING_INTERVAL = int(os.getenv("POLLING_INTERVAL", "5"))
 
 
-def get_rg_data():
+def get_rg_data(style=None):
     global rg_data, rg_data_timestamp
     if rg_data is not None and time() - rg_data_timestamp < POLLING_INTERVAL:
-        return rg_data
+        return cleanup_rg_data(rg_data, style)
 
     try:
         req = requests.get("https://www.rolandgarros.com/api/fr-fr/polling", timeout=3)
-        rg_data = cleanup_rg_data(req.json())
+        rg_data = req.json()
         rg_data_timestamp = time()
-        return rg_data
+        return cleanup_rg_data(rg_data, style)
     except (OSError, ValueError) as err:
         if not rg_data:
             raise ValueError("Can't fetch Roland Garros data") from err
@@ -236,7 +241,7 @@ def index():
 
 @app.route("/match/<match_id>")
 def match(match_id):
-    for match in get_rg_data()["matches"]:
+    for match in get_rg_data(request.args.get("style"))["matches"]:
         if match["id"] == match_id:
             break
     else:
@@ -247,7 +252,7 @@ def match(match_id):
 @app.route("/polling")
 @check_hash
 def polling():
-    return get_rg_data()
+    return get_rg_data(request.args.get("style"))
 
 
 @app.route("/polling/match/<match_id>")
