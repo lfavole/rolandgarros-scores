@@ -158,10 +158,13 @@ def get_diff(obj1, obj2):
             for i, (item1, item2) in enumerate(zip_longest(obj1, obj2, fillvalue=NOTHING)):
                 if item2 is NOTHING:
                     diff[1][i] = 1
-                if item1 != item2:
+                elif item1 is NOTHING:
+                    diff[0][i] = item2
+                    continue
+                if item1 != item2:  # type: ignore
                     diff[0][i] = {}
                     diff[1][i] = {}
-                    recursive_diff(obj1[i], obj2[i], (diff[0][i], diff[1][i]))
+                    recursive_diff(item1, item2, (diff[0][i], diff[1][i]))
                     if diff[0][i] == {}:
                         del diff[0][i]
                     if diff[1][i] == {}:
