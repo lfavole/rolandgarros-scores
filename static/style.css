@@ -1,6 +1,12 @@
 body {
     font-family: "Open Sans", Arial, Helvetica, sans-serif;
 }
+form {
+    line-height: 2em;
+}
+.status-selector {
+    line-height: 1em;
+}
 p {
     margin: 1em 0;
 }

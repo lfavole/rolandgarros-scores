@@ -11,7 +11,7 @@
     <script defer src="/static/cdn.min.js"></script>
     <script src="/static/script.js"></script>
 </head>
-<body x-data="{ style: 'website', interval: 5, intv: null }" x-effect="
+<body x-data="{ style: 'website', show_status: 'live', interval: 5, intv: null, match_page: {{ match }} }" x-effect="
         if(intv) {clearInterval(intv); intv = null;}
         if(interval > 0) {
             intv = setInterval(() => fetch_data(style), interval * 1000);
@@ -41,6 +41,20 @@
             <input type="number" min="0" step="1" size="5" x-model.number="interval">
             secondes
         </label>
+        <span class="status-selector" x-show="!match_page">
+            <label>
+                <input type="radio" x-model="show_status" name="status" value="finished">
+                Terminés
+            </label>
+            <label>
+                <input type="radio" x-model="show_status" name="status" value="live" checked>
+                En cours
+            </label>
+            <label>
+                <input type="radio" x-model="show_status" name="status" value="upcoming">
+                À venir
+            </label>
+        </span>
     </form>
     <p class="matches">
         <template x-data x-for="match in $store.data.matches">

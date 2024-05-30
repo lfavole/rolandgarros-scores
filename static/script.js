@@ -7,7 +7,7 @@ var STATUSES_LABELS = {
     "IN_PROGRESS": "en cours",
     "INTERRUPTED": "interrompu",
     "NOT_STARTED": "à venir",
-    "TO_FINISH": "non terminé",
+    "TO_FINISH": "à finir",
 };
 var STATUSES_COLORS = {
     "IN_PROGRESS": "green",
@@ -15,6 +15,13 @@ var STATUSES_COLORS = {
     "FINISHED": "blue",
     "NOT_STARTED": "blue",
     // all the other statuses are red
+};
+var STATUSES_DISPLAY = {
+    "NOT_STARTED": "upcoming",
+    "TO_FINISH": "upcoming",
+    "IN_PROGRESS": "live",
+    "INTERRUPTED": "live",
+    // all the other statuses are "finished"
 };
 var ENDCAUSES_LABELS = {
     "ab.": "Abandon",

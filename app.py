@@ -239,7 +239,7 @@ def alpinejs():
 
 @app.route("/")
 def index():
-    return render_template("matches_list.html")
+    return render_template("matches_list.html", match="false")
 
 
 @app.route("/match/<match_id>")
@@ -249,7 +249,7 @@ def match(match_id):
             break
     else:
         raise NotFound
-    return render_template("match.html", match_id=match_id)
+    return render_template("match.html", match="true", match_id=match_id)
 
 
 @app.route("/polling")
