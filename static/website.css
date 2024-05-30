@@ -40,7 +40,7 @@
 .website .match {
     box-shadow: 0 0 30px 0 #e1e1e1;
 }
-.website .match:hover {
+.website .match:not(:only-of-type):hover {
     opacity: 0.6;
 }
 .website .match-type {
