@@ -94,8 +94,7 @@
                 recursive_edit(oldData, data[1], true);
                 data = oldData;
             }
-            Alpine.store("data", {});
-            setTimeout(() => Alpine.store("data", data), 50);
+           Alpine.store("data", data);
         }
     </script>
 </body>
