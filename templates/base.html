@@ -58,6 +58,24 @@
                 var data = await resp.json();
                 if(!data) return;
             } catch(e) {return;}
+            if(Array.isArray(data) && data.length == 2) {
+                var oldData = Alpine.store("data");
+                function recursive_edit(data, diff, del = false) {
+                    for(key in diff) {
+                        if(diff[key] + "" == "[object Object]") {
+                            recursive_edit(data[key], diff[key], del);
+                        } else {
+                            if(del)
+                                delete data[key];
+                            else
+                                data[key] = diff[key];
+                        }
+                    }
+                }
+                recursive_edit(oldData, data[0]);
+                recursive_edit(oldData, data[1], true);
+                data = oldData;
+            }
             Alpine.store("data", {});
             setTimeout(() => Alpine.store("data", data), 50);
         }

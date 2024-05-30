@@ -1,10 +1,12 @@
 from copy import deepcopy
-from functools import wraps
+from functools import lru_cache, wraps
 import gzip
 from hashlib import md5
+from itertools import zip_longest
 import os
 from pathlib import Path
 from time import time
+from typing import Any
 import zlib
 from flask import Flask, Response, render_template, request, send_file
 import requests
@@ -123,13 +125,95 @@ def get_rg_data():
         return rg_data
 
 
+hashes: dict[str, Any] = {}
+
+
+def get_hash(obj):
+    for hash, test_obj in hashes.items():
+        if test_obj == obj:
+            return hash
+
+    if len(hashes) > 100:
+        for key in list(hashes.keys())[:50]:
+            del hashes[key]
+
+    hash = md5(app.json.dumps(obj).encode()).hexdigest()[0:8]
+    hashes[hash] = obj
+    return hash
+
+
+def get_diff(obj1, obj2):
+    # [added_or_edited, deleted]
+    # this must be a list in order to be automatically serialized to JSON by Flask
+    ret = [{}, {}]
+
+    def recursive_diff(obj1, obj2, diff):
+        if isinstance(obj1, list) and isinstance(obj2, list):
+            NOTHING = object()
+            for i, (item1, item2) in enumerate(zip_longest(obj1, obj2, fillvalue=NOTHING)):
+                if item2 is NOTHING:
+                    diff[1][i] = 1
+                if item1 != item2:
+                    diff[0][i] = {}
+                    diff[1][i] = {}
+                    recursive_diff(obj1[i], obj2[i], (diff[0][i], diff[1][i]))
+                    if diff[0][i] == {}:
+                        del diff[0][i]
+                    if diff[1][i] == {}:
+                        del diff[1][i]
+            return
+
+        for key in obj1:
+            if key not in obj2:
+                diff[1][key] = 1
+            else:
+                if (
+                    isinstance(obj1[key], dict) and isinstance(obj2[key], dict)
+                    or isinstance(obj1[key], list) and isinstance(obj2[key], list)
+                ):
+                    diff[0][key] = {}
+                    diff[1][key] = {}
+                    recursive_diff(obj1[key], obj2[key], (diff[0][key], diff[1][key]))
+
+                    if diff[0][key] == {}:
+                        del diff[0][key]
+                    else:
+                        keys0 = list(diff[0][key].keys())
+                        if keys0 == list(range(len(keys0))):
+                            diff[0][key] = list(diff[0][key].values())
+
+                    if diff[1][key] == {}:
+                        del diff[1][key]
+                    else:
+                        keys1 = list(diff[1][key].keys())
+                        if keys1 == list(range(len(keys1))):
+                            diff[1][key] = list(diff[1][key].values())
+
+                else:
+                    if obj1[key] != obj2[key]:
+                        diff[0][key] = obj2[key]
+
+        for key in obj2:
+            if key not in obj1:
+                diff[0][key] = obj2[key]
+
+    recursive_diff(obj1, obj2, ret)
+    return ret
+
+
 def check_hash(f):
     @wraps(f)
     def decorator(*args, **kwargs):
         ret = f(*args, **kwargs)
-        ret["hash"] = md5(app.json.dumps(ret).encode()).hexdigest()[0:8]
-        if ret["hash"] == request.args.get("hash"):
+        ret["hash"] = get_hash(ret)
+        expected_hash = request.args.get("hash")
+
+        if ret["hash"] == expected_hash:
             return Response("null", mimetype="application/json")
+
+        if expected_hash and expected_hash in hashes:
+            return get_diff(hashes[expected_hash], ret)
+
         return ret
 
     return decorator
