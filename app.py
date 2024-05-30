@@ -237,6 +237,16 @@ def alpinejs():
     return Response(req.text, mimetype="text/javascript")
 
 
+@app.route("/favicon.png")
+def favicon_png():
+    return send_file(Path(__file__).parent / "static/favicon.png")
+
+
+@app.route("/favicon.ico")
+def favicon_ico():
+    return send_file(Path(__file__).parent / "static/favicon.ico")
+
+
 @app.route("/")
 def index():
     return render_template("matches_list.html", match="false")
