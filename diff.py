@@ -68,12 +68,9 @@ def get_diff(obj1, obj2):
                         if keys0 == list(range(len(keys0))):
                             diff_l[key] = list(diff_l[key].values())
 
-            else:
+            elif item1 != item2:
                 # the object is different, edit it
                 diff[0][key] = item2
-
-            assert item1 == item2
-            # the items should be equal, don't do anything
 
     recursive_diff(obj1, obj2, ret)
     return ret
