@@ -81,6 +81,9 @@
 .website .name {
     font-weight: bold;
 }
+.website .name > * {
+    vertical-align: middle;
+}
 .website .player {
     background-color: #fff;
     border: 1px solid #e1e1e1;
