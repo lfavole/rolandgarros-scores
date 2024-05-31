@@ -16,7 +16,6 @@ app = Flask(__name__)
 app.json.ensure_ascii = False  # type: ignore
 app.json.compact = True  # type: ignore
 
-Response.default_mimetype = None
 Response.automatically_set_content_length = False
 
 
