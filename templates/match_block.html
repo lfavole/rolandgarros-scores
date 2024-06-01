@@ -27,12 +27,18 @@
                     </template>
                 </td>
                 <td class="has-service" x-show="style == 'website'" :class="team.hasService ? 'yes' : ''" x-text="team.hasService ? '//' : ''"></td>
-                <template x-for="set in team.sets">
-                    <td class="set" :class="winner_class(set)">
-                        <span class="number" x-text="set.score"></span><!--
-                        --><span class="tie-break" x-show="set.tieBreak" x-text="set.tieBreak"></span>
-                    </td>
-                </template>
+                <td class="sets">
+                    <table>
+                        <tr>
+                            <template x-for="set in team.sets">
+                                <td class="set" :class="winner_class(set)">
+                                    <span class="number" x-text="set.score"></span><!--
+                                    --><span class="tie-break" x-show="set.tieBreak" x-text="set.tieBreak"></span>
+                                </td>
+                            </template>
+                        </tr>
+                    </table>
+                </td>
                 <td class="points" x-show="status == 'IN_PROGRESS'" x-text="team.points"></td>
                 <td class="end-cause" x-show="matchData.endCause" x-text="ENDCAUSES_LABELS[matchData.endCause] || matchData.endCause"></td>
                 <td rowspan="2" x-show="i == 0 && matchData.notBefore" x-text="'Pas avant ' + matchData.notBefore"></td>
