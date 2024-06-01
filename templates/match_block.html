@@ -1,14 +1,14 @@
-<a class="match" x-show="match_page || show_status == (STATUSES_DISPLAY[status] || 'finished')" x-data="{ matchData: match.matchData, status: match.matchData.status }" :href="match_page ? '#' : '/match/' + match.id" @click="match_page && $event.preventDefault()">
+<a class="match" x-show="match_page || show_status == (STATUSES_DISPLAY[matchData.status] || 'finished')" x-data="{ matchData: match.matchData }" :href="match_page ? '#' : '/match/' + match.id" @click="match_page && $event.preventDefault()">
     <div>
         <span class="match-type" x-text="matchData.typeLabel"></span>
         <span x-show="style != 'website' && matchData.dateSchedule" x-text="' - ' + format_rg_date(matchData.dateSchedule)"></span>
         <span x-text="matchData.isNightSession ? '🌙' : ''"></span>
-        <span class="status" x-text="STATUSES_LABELS[status] || status" :class="STATUSES_COLORS[status] || 'red'"></span>
+        <span class="status" x-text="STATUSES_LABELS[matchData.status || 'FINISHED'] || matchData.status" :class="STATUSES_COLORS[matchData.status || 'FINISHED'] || 'red'"></span>
     </div>
     <div>
         <span class="court-name" x-text="matchData.courtName"></span> -
         <span class="round-label" x-text="matchData.roundLabel"></span>
-        <span class="duration" x-data="{ duration: matchData.durationInMinutes }" x-show="duration" x-text="format_duration(duration, style == 'website')"></span>
+        <span class="duration" x-show="matchData.durationInMinutes" x-text="format_duration(matchData.durationInMinutes, style == 'website')"></span>
     </div>
     <table>
         <template x-data="{ teams: [match.teamA, match.teamB] }" x-for="(team, i) in teams">
@@ -28,13 +28,13 @@
                 </td>
                 <td class="has-service" x-show="style == 'website'" :class="team.hasService ? 'yes' : ''" x-text="team.hasService ? '//' : ''"></td>
                 <template x-for="set in team.sets">
-                    <td class="set" x-data="{ tieBreak: set.tieBreak, score: set.score }" :class="winner_class(set)">
-                        <span class="number" x-text="score"></span><!--
-                        --><span class="tie-break" x-show="tieBreak" x-text="tieBreak"></span>
+                    <td class="set" :class="winner_class(set)">
+                        <span class="number" x-text="set.score"></span><!--
+                        --><span class="tie-break" x-show="set.tieBreak" x-text="set.tieBreak"></span>
                     </td>
                 </template>
                 <td class="points" x-show="status == 'IN_PROGRESS'" x-text="team.points"></td>
-                <td class="end-cause" x-data="{ endCause: matchData.endCause }" x-show="endCause" x-text="ENDCAUSES_LABELS[endCause] || endCause"></td>
+                <td class="end-cause" x-show="matchData.endCause" x-text="ENDCAUSES_LABELS[matchData.endCause] || matchData.endCause"></td>
                 <td rowspan="2" x-show="i == 0 && matchData.notBefore" x-text="'Pas avant ' + matchData.notBefore"></td>
                 <td rowspan="2" x-show="i == 0 && matchData.startingAt" x-text="'À partir de ' + matchData.startingAt"></td>
             </tr>
