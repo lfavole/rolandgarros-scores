@@ -61,6 +61,7 @@
         <template x-data x-for="match in $store.data.matches">
             {% include "match_block.html" %}
         </template>
+        <span x-show="!$store.data.matches">Aucun match</span>
     </p>
     <script>
         document.addEventListener("alpine:init", function() {
