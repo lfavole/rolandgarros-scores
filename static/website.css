@@ -28,6 +28,9 @@
 .website td {
     padding: 4px;
 }
+.website .team:not(:first-of-type) {
+    border-top: 1px solid #e8e8e8;
+}
 
 .website .won {
     color: #242424;
