@@ -18,6 +18,7 @@ var STATUSES_COLORS = {
 };
 var STATUSES_DISPLAY = {
     "NOT_STARTED": "upcoming",
+    "CANCELED": "upcoming",
     "TO_FINISH": "upcoming",
     "IN_PROGRESS": "live",
     "INTERRUPTED": "live",
