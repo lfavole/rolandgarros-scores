@@ -98,6 +98,13 @@
     margin: 1.25em 0.5em 0.25em -0.25em;
     width: 1.1875em;
 }
+/* for doubles, hide the picture and remove the margin on the flag */
+.website .name:not(:only-of-type) .player {
+    display: none;
+}
+.website .name:not(:only-of-type) .flag {
+    margin: unset;
+}
 .website .rank::before {
     content: "(";
 }
