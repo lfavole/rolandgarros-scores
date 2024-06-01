@@ -36,6 +36,7 @@
                 <td class="points" x-show="status == 'IN_PROGRESS'" x-text="team.points"></td>
                 <td class="end-cause" x-data="{ endCause: matchData.endCause }" x-show="endCause" x-text="ENDCAUSES_LABELS[endCause] || endCause"></td>
                 <td rowspan="2" x-show="i == 0 && matchData.notBefore" x-text="'Pas avant ' + matchData.notBefore"></td>
+                <td rowspan="2" x-show="i == 0 && matchData.startingAt" x-text="'À partir de ' + matchData.startingAt"></td>
             </tr>
         </template>
     </table>
