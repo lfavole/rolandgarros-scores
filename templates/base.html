@@ -81,6 +81,7 @@
                 var oldData = Alpine.store("data");
                 function recursive_edit(data, diff, del = false) {
                     for(key in diff) {
+                        key = isNaN(+key) ? key : +key;
                         if(diff[key] + "" == "[object Object]") {
                             if(!data[key]) data[key] = {};
                             recursive_edit(data[key], diff[key], del);
