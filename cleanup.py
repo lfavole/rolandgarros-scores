@@ -26,6 +26,7 @@ keys_to_keep = {
                         "firstName": YES,
                         "lastName": YES,
                         "imageUrl": lambda style: style == "website",
+                        "sex": YES,
                     }
                 ],
                 "points": YES,
