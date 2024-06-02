@@ -39,7 +39,7 @@
                         </tr>
                     </table>
                 </td>
-                <td class="points" x-show="status == 'IN_PROGRESS'" x-text="team.points"></td>
+                <td class="points" x-show="matchData.status == 'IN_PROGRESS'" x-text="team.points"></td>
                 <td class="end-cause" x-show="matchData.endCause" x-text="ENDCAUSES_LABELS[matchData.endCause] || matchData.endCause"></td>
                 <td rowspan="2" x-show="i == 0 && matchData.notBefore" x-text="'Pas avant ' + matchData.notBefore"></td>
                 <td rowspan="2" x-show="i == 0 && matchData.startingAt" x-text="'À partir de ' + matchData.startingAt"></td>
