@@ -73,4 +73,6 @@ def get_diff(obj1, obj2):
                 diff[0][key] = item2
 
     recursive_diff(obj1, obj2, ret)
+    if not ret[1]:
+        del ret[1]
     return ret

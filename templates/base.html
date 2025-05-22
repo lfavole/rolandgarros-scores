@@ -83,12 +83,15 @@
                 var data = await resp.json();
                 if(!data) return;
             } catch(e) {return;}
-            if(Array.isArray(data) && data.length == 2) {
+            if(Array.isArray(data) && (data.length == 1 || data.length == 2)) {
                 var oldData = Alpine.store("data");
                 function recursive_edit(data, diff, del = false) {
+                    if(!diff) return;
                     for(key in diff) {
+                        // JSON only has string keys
                         key = isNaN(+key) ? key : +key;
-                        if(diff[key] + "" == "[object Object]") {
+                        // https://stackoverflow.com/a/8511350
+                        if(typeof diff[key] == "object") {
                             if(!data[key]) data[key] = {};
                             recursive_edit(data[key], diff[key], del);
                         } else {
@@ -100,8 +103,9 @@
                     }
                 }
                 recursive_edit(oldData, data[0]);
-                recursive_edit(oldData, data[1], true);
+                if(data[1]) recursive_edit(oldData, data[1], true);
                 data = oldData;
+                if(!data.matches) data.matches = [];
             }
            Alpine.store("data", data);
         }
