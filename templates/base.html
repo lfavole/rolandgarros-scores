@@ -91,6 +91,7 @@
             Alpine.store("data", {matches: [], hash: ""});
         });
         async function fetch_data(style) {
+            if(Alpine.store("loading")) return;
             Alpine.store("loading", true);
             var resp = await fetch(
                 {% block fetch_url %}"/polling"{% endblock fetch_url %}
