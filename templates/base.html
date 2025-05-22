@@ -12,7 +12,9 @@
     <script defer src="/static/cdn.min.js"></script>
     <script src="/static/script.js"></script>
 </head>
-<body x-data="{ style: 'website', show_status: 'live', interval: 5, intv: null, match_page: {{ match }} }" x-effect="
+<body x-data="{ style: 'website', show_status: 'live', interval: 5, intv: null, outdated_delay: null, match_page: {{ match }} }" x-init="
+        setInterval(() => outdated_delay = new Date - $store.lastUpdate, 1000);
+" x-effect="
         if(intv) {clearInterval(intv); intv = null;}
         if(interval > 0) {
             intv = setInterval(() => fetch_data(style), interval * 1000);
@@ -20,8 +22,22 @@
         }
     " :class="style">
     {% block body %}{% endblock %}
-    <p x-data x-text="'Dernière mise à jour : ' + format_date($store.lastUpdate)" x-show="$store.data.matches"></p>
-    <p x-data x-show="! $store.data.matches">Chargement en cours...</p>
+    <p x-data>
+        <span x-text="'Dernière mise à jour : ' + format_date($store.lastUpdate)" x-show="$store.data.matches"></span>
+        <span class="opacity" :class="$store.loading ? '' : 'hidden'">Chargement...</span>
+        <span class="loader opacity" :class="$store.loading ? '' : 'hidden'"></span>
+        <div class="outdated opacity" :class="interval > 0 && outdated_delay > 30000 ? '' : 'hidden'">
+            <div>
+                <div class="emoji">⚠️</div>
+                <div>
+                    Données obsolètes
+                    <span style="white-space: nowrap" x-text="'(' + format_small_duration(outdated_delay / 1000) + ')'"></span>
+                    <br>
+                    Veuillez vous reconnecter à Internet.
+                </div>
+            </div>
+        </div>
+    </p>
     <form action="javascript:;">
         Style :
         <label>
@@ -41,6 +57,7 @@
             Intervalle :
             <input type="number" min="0" step="1" size="5" x-model.number="interval">
             secondes
+            <span class="paused opacity" :class="interval <= 0 ? '' : 'hidden'">⚠️ En pause</span>
         </label>
         <span class="status-selector" x-show="!match_page">
             <label>
@@ -74,10 +91,12 @@
             Alpine.store("data", {matches: [], hash: ""});
         });
         async function fetch_data(style) {
+            Alpine.store("loading", true);
             var resp = await fetch(
                 {% block fetch_url %}"/polling"{% endblock fetch_url %}
-                + "?style=" + style + "&hash=" + Alpine.store("data").hash
+                + "?" + new URLSearchParams({style: style, hash: Alpine.store("data").hash})
             );
+            Alpine.store("loading", false);
             Alpine.store("lastUpdate", new Date);
             try {
                 var data = await resp.json();

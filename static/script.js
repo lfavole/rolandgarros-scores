@@ -35,6 +35,24 @@ function format_rg_date(date) {
 function format_duration(duration, use_h) {
     return Math.floor(duration / 60) + (use_h ? "h" : ":") + (duration % 60 < 10 ? "0": "") + duration % 60;
 }
+function format_small_duration(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+
+    const parts = [];
+    if (hours > 0) {
+        parts.push(hours + " heure" + (hours >= 2 ? "s" : ""));
+    }
+    if (parts && minutes > 0) {
+        parts.push(minutes + " minute" + (minutes >= 2 ? "s" : ""));
+    }
+    if (parts && seconds > 0 || parts.length === 0) {
+        parts.push(seconds + " seconde" + (seconds >= 2 ? "s" : ""));
+    }
+
+    return parts.join(" ");
+}
 function format_last_name(player) {
     return player.lastName.toLowerCase().replace(/^\w|\s\w|-\w|'\w/g, (char) => char.toUpperCase());
 }

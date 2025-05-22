@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: "Open Sans", Arial, Helvetica, sans-serif;
 }
@@ -10,6 +14,67 @@ form {
 p {
     margin: 1em 0;
 }
+
+.loader {
+    width: 1em;
+    height: 1em;
+    border: 0.15em solid black;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    animation: rotation 1s linear infinite;
+}
+.opacity {
+    opacity: 1;
+    transition: opacity 0.2s;
+}
+.hidden {
+    opacity: 0;
+}
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.outdated {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.5em;
+    background-color: #ff8888;
+    display: flex;
+}
+.outdated > div {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    text-align: center;
+    font-size: 1.25em;
+}
+.outdated .emoji {
+    font-size: 1.5em;
+}
+@media (min-width: 501px) {
+    .outdated > div {
+        flex-direction: row;
+        font-size: 2.5em;
+    }
+    .outdated .emoji {
+        font-size: 2em;
+        padding-right: 0.5em;
+    }
+}
+
+.paused {
+    background-color: #ff8888;
+}
+
 p.matches {
     margin-top: 2em;
 }
