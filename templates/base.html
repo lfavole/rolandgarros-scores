@@ -93,11 +93,14 @@
         async function fetch_data(style) {
             if(Alpine.store("loading")) return;
             Alpine.store("loading", true);
-            var resp = await fetch(
-                {% block fetch_url %}"/polling"{% endblock fetch_url %}
-                + "?" + new URLSearchParams({style: style, hash: Alpine.store("data").hash})
-            );
-            Alpine.store("loading", false);
+            try {
+                var resp = await fetch(
+                    {% block fetch_url %}"/polling"{% endblock fetch_url %}
+                    + "?" + new URLSearchParams({style: style, hash: Alpine.store("data").hash})
+                );
+            } finally {
+                Alpine.store("loading", false);
+            }
             Alpine.store("lastUpdate", new Date);
             try {
                 var data = await resp.json();
