@@ -114,7 +114,7 @@
                         // JSON only has string keys
                         key = isNaN(+key) ? key : +key;
                         // https://stackoverflow.com/a/8511350
-                        if(typeof diff[key] == "object") {
+                        if(typeof diff[key] == "object" && diff[key] != null) {
                             if(!data[key]) data[key] = {};
                             recursive_edit(data[key], diff[key], del);
                         } else {
