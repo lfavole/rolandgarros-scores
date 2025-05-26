@@ -57,10 +57,11 @@ function format_last_name(player) {
     return player.lastName.toLowerCase().replace(/^\w|\s\w|-\w|'\w/g, (char) => char.toUpperCase());
 }
 function winner_class(obj, match) {
+    var ret = obj.winner ? "won" : "lost";  // early evaluation for Alpine.js
     if(obj.inProgress) return "";
     var status = (match || obj).matchData && (match || obj).matchData.status;
     if(status && status != "FINISHED") return "";
-    return obj.winner ? "won" : "lost";
+    return ret;
 }
 function format_date(date) {
     return new Intl.DateTimeFormat("fr", {dateStyle: "short", timeStyle: "medium"}).format(date);
