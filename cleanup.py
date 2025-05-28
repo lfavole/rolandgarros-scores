@@ -15,6 +15,7 @@ keys_to_keep = {
                 "roundLabel": YES,
                 "startingAt": None,
                 "status": YES,
+                "type": YES,
                 "typeLabel": YES,
             },
             "teamA": {

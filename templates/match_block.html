@@ -1,4 +1,4 @@
-<a class="match" x-show="match_page || show_status == (STATUSES_DISPLAY[matchData.status] || 'finished')" x-data="{ matchData: match.matchData }" :href="match_page ? '#' : '/match/' + match.id" @click="match_page && $event.preventDefault()">
+<a class="match" x-show="match_page || show_status == (STATUSES_DISPLAY[matchData.status] || 'finished')" x-data="{ matchData: match.matchData }" :href="match_page ? '#' : '/match/' + match.id" @click="(match_page || editing) && $event.preventDefault()">
     <div>
         <span class="match-type" x-text="matchData.typeLabel"></span>
         <span x-show="style != 'website' && matchData.dateSchedule" x-text="' - ' + format_rg_date(matchData.dateSchedule)"></span>
@@ -10,16 +10,19 @@
         <span class="round-label" x-text="matchData.roundLabel"></span>
         <span class="duration" x-show="matchData.durationInMinutes" x-text="format_duration(matchData.durationInMinutes, style == 'website')"></span>
     </div>
+    <div class="message">
+        <span x-text="get_match_status(match.teamA, match.teamB, matchData.type == 'SM' ? 3 : 2)"></span>
+    </div>
     <table>
         <template x-data="{ teams: [match.teamA, match.teamB] }" x-for="(team, i) in teams">
             <tr class="team">
                 <td class="has-service" x-show="style != 'website'" :class="team.hasService ? 'yes' : ''" x-text="team.hasService ? '//' : ''"></td>
                 <td class="names" :class="winner_class(team, match)">
                     <template x-data="{ players: team.players }" x-for="player in players">
-                        <span class="name">
+                        <span class="name" @click="interval = 0; score_point(team, i ? match.teamA : match.teamB, match.matchData.type == 'QM' ? 3 : 2)">
                             <img x-show="style == 'website'" class="player" :src="player.imageUrl || 'https://www.rolandgarros.com/img/avatar-' + (player.sex == 'F' ? 'wo' : '') + 'man.png'"><!--
                             --><img x-show="style == 'website' && player.country" class="flag" :alt="player.country" :src="'https://www.rolandgarros.com/img/flags-svg/' + player.country + '.svg'">
-                            <span class="first-name" x-text="style == 'website' ? player.firstName.substring(0, 1) + '.' : player.firstName + ' '"></span><!--
+                            <span class="first-name" x-text="style == 'website' ? format_first_name(player) : player.firstName + ' '"></span><!--
                             --><span class="last-name" x-text="format_last_name(player)"></span>
                             <span class="rank" x-show="team.seed" x-text="team.seed"></span>
                             <br>
@@ -41,8 +44,11 @@
                 </td>
                 <td class="points" x-show="matchData.status == 'IN_PROGRESS'" x-text="team.points"></td>
                 <td class="end-cause" x-show="matchData.endCause" x-text="ENDCAUSES_LABELS[matchData.endCause] || matchData.endCause"></td>
-                <td rowspan="2" x-show="i == 0 && matchData.notBefore" x-text="'Pas avant ' + matchData.notBefore"></td>
-                <td rowspan="2" x-show="i == 0 && matchData.startingAt" x-text="'À partir de ' + matchData.startingAt"></td>
+                <td
+                    rowspan="2"
+                    x-show="i == 0 && (matchData.notBefore || matchData.startingAt)"
+                    x-text="matchData.notBefore ? 'Pas avant ' + matchData.notBefore : matchData.startingAt ? 'À partir de ' + matchData.startingAt : ''"
+                ></td>
             </tr>
         </template>
     </table>

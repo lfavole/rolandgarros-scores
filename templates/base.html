@@ -12,7 +12,7 @@
     <script defer src="/static/cdn.min.js"></script>
     <script src="/static/script.js"></script>
 </head>
-<body x-data="{ style: 'website', show_status: 'live', interval: 5, intv: null, outdated_delay: null, match_page: {{ match }} }" x-init="
+<body x-data="{ style: 'website', show_status: 'live', interval: 5, editing: false, intv: null, outdated_delay: null, match_page: {{ match }} }" x-init="
         setInterval(() => outdated_delay = new Date - $store.lastUpdate, 1000);
 " x-effect="
         if(intv) {clearInterval(intv); intv = null;}
@@ -73,6 +73,10 @@
                 À venir
             </label>
         </span>
+        <label x-show="!match_page">
+            Modification :
+            <input type="checkbox" x-model="editing">
+        </label>
     </form>
     <p class="matches">
         <template x-data x-for="match in $store.data.matches">

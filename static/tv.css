@@ -1,11 +1,27 @@
 .tv .match {
-    background-color: #0d573d;
-    color: white;
     padding: 0;
     text-transform: uppercase;
     font-weight: bold;
 }
 
+.tv .message {
+    height: 1.5em;
+}
+.tv .message span {
+    background-color: white;
+    color: #0d573d;
+    border: 1px solid #0d573d;
+    border-bottom: none;
+    padding: 4px 8px;
+}
+.tv .message span:empty {
+    background: none;
+    border: none;
+}
+.tv table {
+    background-color: #0d573d;
+    color: white;
+}
 .tv td {
     padding: 4px 8px;
     text-align: center;
@@ -14,7 +30,7 @@
 .tv .has-service {
     padding-right: 0;
 }
-.tv .match > div, .tv .first-name, .tv .name br, .tv .rank, .tv .tie-break, .tv td[rowspan] {
+.tv .match > div:not(.message), .tv .first-name, .tv .name br, .tv .rank, .tv .tie-break, .tv td[rowspan] {
     display: none;
 }
 .tv .names {
