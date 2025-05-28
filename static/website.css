@@ -1,3 +1,4 @@
+/* Status selector */
 .website .status-selector {
     background-color: #ffffff;
     border: 1px solid #cc4e0e;
@@ -15,7 +16,7 @@
     padding: 0.5em 0.75em;
     cursor: pointer;
 }
-.website .status-selector label:has(input:checked)  {
+.website .status-selector label:has(input:checked) {
     background-color: #cc4e0e;
     color: #ffffff;
     font-weight: bold;
@@ -25,33 +26,26 @@
     position: absolute;
 }
 
-.website td {
-    padding: 4px;
-}
-.website .team:not(:first-of-type) {
-    border-top: 1px solid #e8e8e8;
-}
-
-.website .won {
-    color: #242424;
-    font-weight: bold;
-}
-.website .lost {
-    color: #9f9f9f;
-}
-
+/* Match layout */
 .website .match {
     box-shadow: 0 0 30px 0 #e1e1e1;
 }
 .website .match:not(:only-of-type):hover {
     opacity: 0.6;
 }
+
+/* Metadata */
+.website .info-1, .website .info-2 {
+    display: flex;
+}
 .website .match-type {
     color: #cc4e0e;
     font-weight: bold;
 }
+.website .match-date, .website .match-night:not(:empty) {
+    margin-left: 0.3em;
+}
 .website .status {
-    float: right;
     border: 1px solid #00503c;
     color: #00503c;
     border-radius: 3px;
@@ -59,7 +53,7 @@
     font-weight: bold;
     min-width: 5em;
     padding: 0 0.5em;
-    margin-left: 0.5em;
+    margin-left: auto;
     text-align: center;
     text-transform: uppercase;
 }
@@ -73,21 +67,59 @@
     font-variant: small-caps;
 }
 .website .duration {
-    float: right;
-    margin-left: 0.5em;
+    margin-left: auto;
+}
+.website .round-label::before {
+    content: "-";
+    margin: 0 0.3em;
+}
+.website .teams-and-starting-at {
+    display: flex;
+}
+.website .starting-at {
+    display: flex;
+    align-items: center;
+    text-align: center;
 }
 
+/* Teams */
+.website .teams {
+    flex-grow: 1;
+}
+.website .team, .website .sets {
+    display: flex;
+    align-items: center;
+}
+.website .team {
+    min-height: 3.2em;
+    gap: 0.5em;
+}
+.website .team + .team {
+    border-top: 1px solid #e8e8e8;
+}
+.website .won {
+    color: #242424;
+    font-weight: bold;
+}
+.website .lost {
+    color: #9f9f9f;
+}
+
+/* Names */
+.website .names {
+    flex-grow: 1;
+    overflow: hidden;
+}
 .website .names.won {
     padding-right: 1.5em;
     background: url(check.svg) no-repeat center right;
 }
 .website .name {
     font-weight: bold;
+    display: flex;
+    align-items: center;
 }
-.website .name > * {
-    vertical-align: middle;
-}
-.website .player {
+.website .player-image {
     background-color: #fff;
     border: 1px solid #e1e1e1;
     border-radius: 50%;
@@ -98,15 +130,34 @@
     border-radius: 3px;
     box-shadow: 0 0 1px 1px #f8f8f8;
     height: 0.8125em;
-    margin: 1.25em 0.5em 0.25em -0.25em;
+    /* margin: 1.25em 0.5em 0.25em -0.25em; */
+    margin: 0;
+    align-self: end;
+    transform: translateX(-0.5em);
     width: 1.1875em;
 }
+.website .flag:hidden + .first-name {
+    margin-left: 0.3em;
+}
+.website .last-name {
+    flex-shrink: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 /* for doubles, hide the picture and remove the margin on the flag */
-.website .name:not(:only-of-type) .player {
+.website .name:not(:only-of-type) .player-image {
     display: none;
 }
 .website .name:not(:only-of-type) .flag {
     margin: unset;
+    align-self: unset;
+    transform: unset;
+    margin-right: 0.5em;
+}
+.website .rank, .website .entry-status {
+    font-size: 0.75em;
+    margin-left: 0.5em;
 }
 .website .rank::before, .website .entry-status::before {
     content: "(";
@@ -116,6 +167,11 @@
 }
 .website .rank, .website .entry-status {
     font-weight: normal;
+}
+
+/* Scores */
+.won + .has-service, .lost + .has-service {
+    display: none;
 }
 .website .has-service.yes {
     color: transparent;

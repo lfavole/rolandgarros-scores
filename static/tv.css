@@ -1,55 +1,67 @@
+/* Match layout */
 .tv .match {
     padding: 0;
     text-transform: uppercase;
     font-weight: bold;
 }
 
+/* Metadata */
 .tv .message {
-    height: 1.5em;
+    height: calc(1.5em + 1px);
 }
 .tv .message span {
     background-color: white;
     color: #0d573d;
     border: 1px solid #0d573d;
     border-bottom: none;
-    padding: 4px 8px;
+    padding: 0.25em 0.75em;
 }
 .tv .message span:empty {
     background: none;
     border: none;
 }
-.tv table {
+
+/* Teams */
+.tv .team {
     background-color: #0d573d;
     color: white;
+    min-height: 2em;
 }
-.tv td {
-    padding: 4px 8px;
-    text-align: center;
+.tv .team + .team {
+    border-top: 1px solid #e8e8e8;
 }
 
+/* Names */
+.tv .names {
+    display: block;
+}
+.tv .names > div {
+    display: inline-block;
+}
+.tv .names > div:nth-of-type(2)::before {
+    content: "&";
+    margin: 0 0.3em;
+}
+.tv .info-1, .tv .info-2, .tv .first-name, .tv .rank, .tv .entry-status, .tv .tie-break {
+    display: none;
+}
+
+/* Scores */
 .tv .has-service {
     padding-right: 0;
 }
-.tv .match > div:not(.message), .tv .first-name, .tv .name br, .tv .rank, .tv .entry-status, .tv .tie-break, .tv td[rowspan] {
-    display: none;
-}
-.tv .names {
-    text-align: left;
-    width: unset;
-    min-width: 100px;
-}
-.tv .names > span:nth-of-type(2)::before {
-    content: " & ";
+.tv .set, .tv .points {
+    padding: 0.5em 0;
 }
 .tv .set.lost {
     opacity: 0.5;
 }
-.tv .set:not(.won, .lost) {
+.tv .set:not(.won, .lost) {  /* in progress */
     background-color: #31b56d;
 }
 .tv .points {
     background-color: #e0dfe0;
     color: #777777;
-    padding: 4px 0;
     width: 1.5em;
+    margin: 0;
 }
