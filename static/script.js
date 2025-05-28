@@ -87,7 +87,11 @@ function get_match_status(teamA, teamB, setsNumber) {
         while(true) {
             var team2 = structuredClone(Alpine.raw(team));
             var oppositeTeam2 = structuredClone(Alpine.raw(oppositeTeam));
-            for(var i = 0; i < count; i++) score_point(oppositeTeam2, team2, setsNumber);
+            for(var i = 0; i < count; i++) {
+                score_point(oppositeTeam2, team2, setsNumber);
+                if(oppositeTeam2.winner) break;
+            }
+            if(oppositeTeam2.winner) break;
             score_point(team2, oppositeTeam2, setsNumber);
             status = "";
             if(team2.winner)
@@ -105,6 +109,7 @@ function get_match_status(teamA, teamB, setsNumber) {
             // (this will never be true during the first iteration)
             if(status != firstStatus) break;
             count++;
+            if(count > 3) throw new Error(`Impossible state: more than 3 '${firstStatus}'`);
         }
         // Return the number of times the status occurred
         if(firstStatus) {
@@ -122,12 +127,14 @@ function get_match_status(teamA, teamB, setsNumber) {
 
     if(teamA.points == "0" && teamB.points == "0") {
         for(var [team, oppositeTeam] of [[teamA, teamB], [teamB, teamA]]) {
+            if(!team.hasService) continue;
             var team2 = structuredClone(Alpine.raw(team));
             var oppositeTeam2 = structuredClone(Alpine.raw(oppositeTeam));
             for(var i = 0; i < 4; i++)
                 score_point(team2, oppositeTeam2, setsNumber);
-            if(team2.winner) return "Sert pour le match";
-            if(get_last(team2.sets)?.winner) return "Sert pour le set";
+            var serve = teamA.players.length > 1 ? "Servent" : "Sert";
+            if(team2.winner) return serve + " pour le match";
+            if(get_last(team2.sets)?.winner) return serve + " pour le set";
         }
     }
     return "";
@@ -200,18 +207,17 @@ function score_point(teamA, teamB, setsNumber) {
     var lastSetB = get_last(teamB.sets);
     lastSetA.score++;
 
+    // The player that was already serving begins the tie-break
+    // and if we won the tie-break game, we won the set
     if(lastSetA.score != 6 || lastSetB.score != 6) {
         teamA.hasService = !teamA.hasService;
         teamB.hasService = !teamB.hasService;
+
+        // You must have at least 6 games to win a set
+        if(lastSetA.score < 6) return;
+        // with a 2 games offset
+        if(lastSetA.score - lastSetB.score < 2) return;
     }
-
-    // Let's win a set
-    if(lastSetA.score == 6 && lastSetB.score == 6) return;  // tie-break
-
-    // You must have at least 6 games to win a set
-    if(lastSetA.score < 6) return;
-    // with a 2 games offset
-    if(lastSetA.score - lastSetB.score < 2) return;
 
     // At this point we won a set
     lastSetA.winner = true;
@@ -222,9 +228,9 @@ function score_point(teamA, teamB, setsNumber) {
     // Let's win the match
     var setsWonA = 0;
     var setsWonB = 0;
-    for(var i = 0; i < teamA.sets.length - 1; i++)
+    for(var i = 0; i < teamA.sets.length; i++)
         if(teamA.sets[i].winner) setsWonA++;
-    for(var i = 0; i < teamB.sets.length - 1; i++)
+    for(var i = 0; i < teamB.sets.length; i++)
         if(teamB.sets[i].winner) setsWonB++;
 
     for(var [team, setsWon] of [["A", setsWonA], ["B", setsWonB]])
@@ -238,7 +244,12 @@ function score_point(teamA, teamB, setsNumber) {
         return;
     }
 
-    // Congrats! We won the match!
-    teamA.winner = true;
-    teamB.winner = false;
+    if(setsWonA == setsNumber) {
+        // Congratulations! We won the match!
+        teamA.winner = true;
+        teamB.winner = false;
+        return;
+    }
+
+    throw new Error(`Impossible state: team B has won the match, not team A (A = ${setsWonA} sets, B = ${setsWonB} sets)`);
 }
