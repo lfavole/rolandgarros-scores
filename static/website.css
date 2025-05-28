@@ -108,11 +108,14 @@
 .website .name:not(:only-of-type) .flag {
     margin: unset;
 }
-.website .rank::before {
+.website .rank::before, .website .entry-status::before {
     content: "(";
 }
-.website .rank::after {
+.website .rank::after, .website .entry-status::after {
     content: ")";
+}
+.website .rank, .website .entry-status {
+    font-weight: normal;
 }
 .website .has-service.yes {
     color: transparent;

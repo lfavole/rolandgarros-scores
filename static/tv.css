@@ -30,7 +30,7 @@
 .tv .has-service {
     padding-right: 0;
 }
-.tv .match > div:not(.message), .tv .first-name, .tv .name br, .tv .rank, .tv .tie-break, .tv td[rowspan] {
+.tv .match > div:not(.message), .tv .first-name, .tv .name br, .tv .rank, .tv .entry-status, .tv .tie-break, .tv td[rowspan] {
     display: none;
 }
 .tv .names {

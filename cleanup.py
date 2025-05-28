@@ -20,6 +20,7 @@ keys_to_keep = {
             },
             "teamA": {
                 "endCause": None,
+                "entryStatus": None,
                 "hasService": False,
                 "players": [
                     {

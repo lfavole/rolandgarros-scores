@@ -10,7 +10,7 @@
 .default .blue {
     color: blue;
 }
-.default .rank, .default .tie-break {
+.default .rank, .default .entry-status, .default .tie-break {
     vertical-align: super;
     font-size: smaller;
 }

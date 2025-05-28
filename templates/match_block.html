@@ -25,6 +25,7 @@
                             <span class="first-name" x-text="style == 'website' ? format_first_name(player) : player.firstName + ' '"></span><!--
                             --><span class="last-name" x-text="format_last_name(player)"></span>
                             <span class="rank" x-show="team.seed" x-text="team.seed"></span>
+                            <span class="entry-status" x-show="team.entryStatus" x-text="team.entryStatus"></span>
                             <br>
                         </span>
                     </template>
