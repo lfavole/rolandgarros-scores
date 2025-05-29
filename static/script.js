@@ -67,7 +67,7 @@ function winner_class(obj, match) {
     return ret;
 }
 function format_date(date) {
-    return new Intl.DateTimeFormat("fr", {dateStyle: "short", timeStyle: "medium"}).format(date);
+    return +date ? new Intl.DateTimeFormat("fr", {dateStyle: "short", timeStyle: "medium"}).format(date) : "";
 }
 function get_last(list) {
     return list[list.length - 1];
@@ -253,3 +253,15 @@ function score_point(teamA, teamB, setsNumber) {
 
     throw new Error(`Impossible state: team B has won the match, not team A (A = ${setsWonA} sets, B = ${setsWonB} sets)`);
 }
+
+window.addEventListener("DOMContentLoaded", function() {
+    if("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js", {scope: "/"})
+        .then(function(reg) {
+            console.log(`Service worker registration succeeded. Scope is ${reg.scope}`);
+        })
+        .catch(function(error) {
+            console.error("Service worker registration failed:", error);
+        });
+    }
+});

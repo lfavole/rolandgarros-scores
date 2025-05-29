@@ -25,10 +25,10 @@
                     <div class="names" :class="winner_class(team, match)">
                         <template x-data="{ players: team.players }" x-for="player in players">
                             <div class="name" @click="interval = 0; score_point(team, i ? match.teamA : match.teamB, match.matchData.type == 'QM' ? 3 : 2)"><!--
-                                --><img x-show="style == 'website'" class="player-image" :src="player.imageUrl || 'https://www.rolandgarros.com/img/avatar-' + (player.sex == 'F' ? 'wo' : '') + 'man.png'"><!--
-                                --><img x-show="style == 'website' && player.country" class="flag" :alt="player.country" :src="'https://www.rolandgarros.com/img/flags-svg/' + player.country + '.svg'"><!--
-                                --><span class="first-name" x-text="style == 'website' ? format_first_name(player) : player.firstName + ' '"></span><!--
-                                --><span class="last-name" x-text="format_last_name(player)"></span><!--
+                                --><img x-show="style == 'website'" class="player-image" :src="'/static/player/' + player.id + '?s=' + $el.clientWidth"><!--
+                                --><img x-show="style == 'website' && player.country" class="flag" :alt="player.country" :title="player.country" :src="'/static/flag/' + player.country"><!--
+                                --><span class="first-name" x-text="style == 'website' ? format_first_name(player) : player.firstName + ' '" :title="style == 'website' ? player.firstName : ''"></span><!--
+                                --><span class="last-name" x-text="format_last_name(player)" :title="style == 'tv' ? player.firstName + ' ' + player.lastName : ''"></span><!--
                                 --><span class="rank" x-show="team.seed" x-text="team.seed"></span><!--
                                 --><span class="entry-status" x-show="team.entryStatus" x-text="team.entryStatus"></span>
                             </div>

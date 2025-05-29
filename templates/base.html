@@ -9,24 +9,36 @@
     <link rel="stylesheet" href="/static/default.css">
     <link rel="stylesheet" href="/static/website.css">
     <link rel="stylesheet" href="/static/tv.css">
+    <script defer src="/static/persist.min.js"></script>
     <script defer src="/static/cdn.min.js"></script>
     <script src="/static/script.js"></script>
 </head>
-<body x-data="{ style: 'website', show_status: 'live', interval: 5, editing: false, intv: null, outdated_delay: null, match_page: {{ match }} }" x-init="
-        setInterval(() => outdated_delay = new Date - $store.lastUpdate, 1000);
+<body x-data="{
+    data: $persist({matches: [], hash: ''}){% if match_id %}.as('data-{{match_id}}'){% endif %},
+    lastUpdate: $persist(0),
+    style: $persist('website'),
+    show_status: $persist('live'),
+    interval: $persist(5),
+    editing: false,
+    intv: null,
+    outdated_delay: null,
+    match_page: {{ match }},
+    async reload() {await fetch_data($data.data, () => $data.lastUpdate = new Date, $data.style)},
+}" x-init="
+        setInterval(() => outdated_delay = new Date - new Date(lastUpdate), 1000);
 " x-effect="
         if(intv) {clearInterval(intv); intv = null;}
         if(interval > 0) {
-            intv = setInterval(() => fetch_data(style), interval * 1000);
-            setTimeout(() => fetch_data(style));
+            intv = setInterval(reload, interval * 1000);
+            setTimeout(reload);
         }
     " :class="style">
     {% block body %}{% endblock %}
     <p x-data>
-        <span x-text="'Dernière mise à jour : ' + format_date($store.lastUpdate)" x-show="$store.data.matches"></span>
+        <span x-text="'Dernière mise à jour : ' + format_date(new Date(lastUpdate))" x-show="data.matches"></span>
         <span class="opacity" :class="$store.loading ? '' : 'hidden'">Chargement...</span>
         <span class="loader opacity" :class="$store.loading ? '' : 'hidden'"></span>
-        <div class="outdated opacity" :class="interval > 0 && outdated_delay > 30000 ? '' : 'hidden'">
+        <div class="outdated opacity" :class="interval > 0 && new Date(lastUpdate) && outdated_delay > 30000 ? '' : 'hidden'">
             <div>
                 <div class="emoji">⚠️</div>
                 <div>
@@ -39,6 +51,7 @@
         </div>
     </p>
     <form action="javascript:;">
+        <input type="button" value="Effacer les données" @click="clearInterval(intv); localStorage.clear(); location.reload()">
         Style :
         <label>
             <input type="radio" x-model="style" name="style" value="default">
@@ -79,39 +92,35 @@
         </label>
     </form>
     <p class="matches">
-        <template x-data x-for="match in $store.data.matches">
+        <template x-data x-for="match in data.matches">
             {% include "match_block.html" %}
         </template>
         <span
             x-show="
-                !$store.data.matches.filter(
+                !data.matches?.some(
                     match => match_page || show_status == (STATUSES_DISPLAY[match.matchData.status] || 'finished')
-                ).length
+                )
             "
             >Aucun match</span>
     </p>
     <script>
-        document.addEventListener("alpine:init", function() {
-            Alpine.store("data", {matches: [], hash: ""});
-        });
-        async function fetch_data(style) {
+        async function fetch_data(oldData, updated, style) {
             if(Alpine.store("loading")) return;
             Alpine.store("loading", true);
             try {
                 var resp = await fetch(
                     {% block fetch_url %}"/polling"{% endblock fetch_url %}
-                    + "?" + new URLSearchParams({style: style, hash: Alpine.store("data").hash})
+                    + "?" + new URLSearchParams({style: style, hash: oldData?.hash})
                 );
             } finally {
                 Alpine.store("loading", false);
             }
-            Alpine.store("lastUpdate", new Date);
+            updated();
             try {
                 var data = await resp.json();
                 if(!data) return;
             } catch(e) {return;}
             if(Array.isArray(data) && (data.length == 1 || data.length == 2)) {
-                var oldData = Alpine.store("data");
                 function recursive_edit(data, diff, del = false) {
                     if(!diff) return;
                     for(key in diff) {
@@ -131,10 +140,10 @@
                 }
                 recursive_edit(oldData, data[0]);
                 if(data[1]) recursive_edit(oldData, data[1], true);
-                data = oldData;
-                if(!data.matches) data.matches = [];
+            } else {
+                for(var key in data)
+                    oldData[key] = data[key];
             }
-           Alpine.store("data", data);
         }
     </script>
 </body>

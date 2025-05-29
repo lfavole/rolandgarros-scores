@@ -26,9 +26,8 @@ keys_to_keep = {
                     {
                         "country": lambda style: style == "website",
                         "firstName": YES,
+                        "id": lambda style: style == "website",
                         "lastName": YES,
-                        "imageUrl": lambda style: style == "website",
-                        "sex": YES,
                     }
                 ],
                 "points": YES,
@@ -55,6 +54,9 @@ def cleanup_rg_data(rg_data, style):
     by removing all the unnecessary information
     and make it suitable for the given `style`.
     """
+    if style is None:
+        return rg_data
+
     rg_data = {"matches": deepcopy(rg_data["matches"])}
 
     def recursive_cleanup(data, schema):

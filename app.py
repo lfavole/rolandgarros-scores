@@ -1,8 +1,10 @@
 import gzip
 import os
+import subprocess as sp
 import zlib
 from pathlib import Path
 from time import time
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 import minify_html
 import requests
@@ -79,6 +81,31 @@ def get_rg_data(style=None):
         return cleanup_rg_data(rg_data, style)
 
 
+def proxy(url):
+    """Proxy a request to a given URL"""
+    req = requests.get(url)
+    if req.status_code == 404:
+        raise NotFound
+    return Response(req.content, mimetype=req.headers["Content-Type"])
+
+
+@app.route("/sw.js")
+def sw():
+    """Service worker"""
+    sw_path = Path(__file__).parent / "static/sw.js"
+    sw_content = sw_path.read_text("utf-8")
+    commit = os.environ.get("VERCEL_GIT_COMMIT_SHA")
+    if not commit:
+        try:
+            if sp.call(["git", "diff-index", "--quiet", "HEAD", "--"], cwd=Path(__file__).parent, stdout=sp.DEVNULL) == 0:
+                commit = commit or sp.check_output(["git", "describe", "HEAD", "--abbrev=8", "--always"], cwd=Path(__file__).parent, text=True).rstrip("\n")
+        except sp.CalledProcessError:
+            pass
+    commit = commit or "dev"
+    sw_content = sw_content.replace('"dev"', f'"{commit[:8]}"', 1)
+    return Response(sw_content, mimetype="text/javascript")
+
+
 @app.route("/static/cdn.min.js")
 def alpinejs():
     """Alpine.js (for local development)"""
@@ -88,8 +115,60 @@ def alpinejs():
         return send_file(alpinejs_path, mimetype="text/javascript")
 
     # otherwise, download it and serve it
-    req = requests.get("https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js")
-    return Response(req.text, mimetype="text/javascript")
+    return proxy("https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js")
+
+
+@app.route("/static/persist.min.js")
+def persist():
+    """Alpine.js persist plugin (for local development)"""
+    persist_path = Path(__file__).parent / "static/persist.min.js"
+    # if the file exists, send it
+    if persist_path.exists():
+        return send_file(persist_path, mimetype="text/javascript")
+
+    # otherwise, download it and serve it
+    return proxy("https://cdn.jsdelivr.net/npm/@alpinejs/persist@3/dist/cdn.min.js")
+
+
+@app.route("/static/flag/<country>")
+def flag(country):
+    """Flag"""
+    return proxy(f"https://www.rolandgarros.com/img/flags-svg/{country}.svg")
+
+
+@app.route("/static/player/<int:player_id>")
+def player_image(player_id):
+    """Player image"""
+    size = request.args.get("s", type=int) or 34  # 2.25em * 16px - border of 2px
+
+    for match in get_rg_data()["matches"]:
+        for team in [match["teamA"], match["teamB"]]:
+            for player in team["players"]:
+                if player["id"] == player_id:
+                    try:
+                        if player["imageUrl"]:
+                            parsed_url = urlparse(player["imageUrl"])
+                            query_params = parse_qs(parsed_url.query)
+                            query_params["w"] = [str(size)]
+                            query_params["h"] = [str(size)]
+                            new_query_string = urlencode(query_params, doseq=True)
+                            new_url = urlunparse(parsed_url._replace(query=new_query_string))
+
+                            return proxy(new_url)
+                    except (KeyError, NotFound):
+                        pass
+                    return default_player_image(player["sex"])
+
+    raise NotFound
+
+
+@app.route("/static/player/<type>")
+def default_player_image(type):
+    """Default player image"""
+    if type in ("M", "F"):
+        return proxy("https://www.rolandgarros.com/img/avatar-" + {"M": "man", "F": "woman"}[type] + ".png")
+
+    raise NotFound
 
 
 @app.route("/favicon.png")
