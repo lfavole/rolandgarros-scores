@@ -29,6 +29,7 @@
 /* Match layout */
 .website .match {
     box-shadow: 0 0 30px 0 #e1e1e1;
+    transition: opacity 0.2s;
 }
 .website .match:not(:only-of-type):hover {
     opacity: 0.6;

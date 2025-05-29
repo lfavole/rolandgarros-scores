@@ -54,7 +54,7 @@ function format_small_duration(totalSeconds) {
     return parts.join(" ");
 }
 function format_first_name(player) {
-    return player.firstName.match(/^\w|(?<=\s)\w|-\w|'\w/g)?.join("") + ".";
+    return player.firstName.match(/^\w|(?<=\s)\w|(?<=-)\w|'\w/g)?.join("") + ".";
 }
 function format_last_name(player) {
     return player.lastName.toLowerCase().replace(/^\w|\s\w|-\w|'\w/g, (char) => char.toUpperCase());
@@ -72,7 +72,7 @@ function format_date(date) {
 function get_last(list) {
     return list[list.length - 1];
 }
-function get_match_status(teamA, teamB, setsNumber) {
+function get_match_status(matchData, teamA, teamB, setsNumber) {
     // The match is over
     if(teamA.winner || teamB.winner) return "";
 
@@ -95,7 +95,7 @@ function get_match_status(teamA, teamB, setsNumber) {
             score_point(team2, oppositeTeam2, setsNumber);
             status = "";
             if(team2.winner)
-                status = "Balle de match";
+                status = "Balle de " + (matchData.roundLabel == "Finale" ? "titre" : "match");
             else if(get_last(team2.sets)?.winner)
                 status = "Balle de set";
             else if(!team.hasService && team2.points == "0")  // scored a game without serving
@@ -133,7 +133,7 @@ function get_match_status(teamA, teamB, setsNumber) {
             for(var i = 0; i < 4; i++)
                 score_point(team2, oppositeTeam2, setsNumber);
             var serve = teamA.players.length > 1 ? "Servent" : "Sert";
-            if(team2.winner) return serve + " pour le match";
+            if(team2.winner) return serve + " pour le " + (matchData.roundLabel == "Finale" ? "titre" : "match");
             if(get_last(team2.sets)?.winner) return serve + " pour le set";
         }
     }

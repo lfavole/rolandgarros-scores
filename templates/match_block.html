@@ -15,7 +15,7 @@
         <span class="duration" x-show="matchData.durationInMinutes" x-text="format_duration(matchData.durationInMinutes, style == 'website')"></span>
     </div>
     <div class="message">
-        <span x-text="get_match_status(match.teamA, match.teamB, matchData.type == 'SM' ? 3 : 2)"></span>
+        <span x-text="get_match_status(matchData, match.teamA, match.teamB, matchData.type == 'SM' ? 3 : 2)"></span>
     </div>
     <div class="teams-and-starting-at">
         <div class="teams">
