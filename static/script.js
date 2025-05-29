@@ -72,6 +72,13 @@ function format_date(date) {
 function get_last(list) {
     return list[list.length - 1];
 }
+function won_last_set(sets, oppositeSets) {
+    return get_last(sets)?.winner || (
+        sets[sets.length - 2]?.winner
+        && get_last(sets)?.score == 0
+        && get_last(oppositeSets)?.score == 0
+    );
+}
 function get_match_status(matchData, teamA, teamB, setsNumber) {
     // The match is over
     if(teamA.winner || teamB.winner) return "";
@@ -96,7 +103,7 @@ function get_match_status(matchData, teamA, teamB, setsNumber) {
             status = "";
             if(team2.winner)
                 status = "Balle de " + (matchData.roundLabel == "Finale" ? "titre" : "match");
-            else if(get_last(team2.sets)?.winner)
+            else if(won_last_set(team2.sets, oppositeTeam2.sets) && team2.points == "0" && oppositeTeam2.points == "0")
                 status = "Balle de set";
             else if(!team.hasService && team2.points == "0")  // scored a game without serving
                 status = "Balle de break";
@@ -109,7 +116,8 @@ function get_match_status(matchData, teamA, teamB, setsNumber) {
             // (this will never be true during the first iteration)
             if(status != firstStatus) break;
             count++;
-            if(count > 3) throw new Error(`Impossible state: more than 3 '${firstStatus}'`);
+            // The maximal number is 10 for the super tie-break
+            if(count > 10) throw new Error(`Impossible state: more than 10 '${firstStatus}'`);
         }
         // Return the number of times the status occurred
         if(firstStatus) {
@@ -134,7 +142,7 @@ function get_match_status(matchData, teamA, teamB, setsNumber) {
                 score_point(team2, oppositeTeam2, setsNumber);
             var serve = teamA.players.length > 1 ? "Servent" : "Sert";
             if(team2.winner) return serve + " pour le " + (matchData.roundLabel == "Finale" ? "titre" : "match");
-            if(get_last(team2.sets)?.winner) return serve + " pour le set";
+            if(won_last_set(team2.sets, oppositeTeam2.sets) && team2.points == "0" && oppositeTeam2.points == "0") return serve + " pour le set";
         }
     }
     return "";
@@ -156,16 +164,21 @@ function score_point(teamA, teamB, setsNumber) {
         teamB.sets.push({score: 0, tieBreak: null, winner: false, inProgress: true, isMatchTieBreak: null});
     }
 
+    var lastSetA = get_last(teamA.sets);
+    var lastSetB = get_last(teamB.sets);
+
     // Let's win a point
-    if(get_last(teamA.sets).score == 6 && get_last(teamB.sets).score == 6) {  // tie-break
-        var superTieBreak = teamA.sets.length == setsNumber - 1; // 3rd or 5th set
+    if(lastSetA.score == 6 && lastSetB.score == 6) {  // tie-break
+        var superTieBreak = teamA.sets.length == 2 * setsNumber - 1; // 3rd or 5th set
         teamA.points++;
-        // Swap the services after 1, 3, 5... total points
-        if((teamA.points + teamB.points) % 2 == 1) {
-            teamA.hasService = !teamA.hasService;
-            teamB.hasService = !teamB.hasService;
+        if(teamA.points < (superTieBreak ? 10 : 7) || teamA.points - teamB.points < 2) {
+            // Swap the services after 1, 3, 5... total points
+            if((+teamA.points + +teamB.points) % 2 == 1) {
+                teamA.hasService = !teamA.hasService;
+                teamB.hasService = !teamB.hasService;
+            }
+            return;
         }
-        if(teamA.points < (superTieBreak ? 10 : 7) || teamA.points - teamB.points < 2) return;
         // fall through (we won the game)
     } else {
         var addPoint = {
@@ -202,22 +215,19 @@ function score_point(teamA, teamB, setsNumber) {
     // At this point we won a game
     teamA.points = "0";
     teamB.points = "0";
-
-    var lastSetA = get_last(teamA.sets);
-    var lastSetB = get_last(teamB.sets);
     lastSetA.score++;
 
     // The player that was already serving begins the tie-break
-    // and if we won the tie-break game, we won the set
-    if(lastSetA.score != 6 || lastSetB.score != 6) {
+    // Otherwise the other player serves
+    if(!(lastSetA.score == 6 && lastSetB.score == 6)) {
         teamA.hasService = !teamA.hasService;
         teamB.hasService = !teamB.hasService;
-
-        // You must have at least 6 games to win a set
-        if(lastSetA.score < 6) return;
-        // with a 2 games offset
-        if(lastSetA.score - lastSetB.score < 2) return;
     }
+
+    // You must have at least 6 games to win a set
+    if(lastSetA.score < 6) return;
+    // with a 2 games offset (or a tie-break, 7-6)
+    if(lastSetA.score - lastSetB.score < 2 && !(lastSetA.score == 7 && lastSetB.score == 6)) return;
 
     // At this point we won a set
     lastSetA.winner = true;
