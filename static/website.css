@@ -38,6 +38,12 @@
 .website .info-1, .website .info-2 {
     display: flex;
 }
+.website .left {
+    flex-shrink: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .website .match-type {
     color: #cc4e0e;
     font-weight: bold;
@@ -85,6 +91,7 @@
 /* Teams */
 .website .teams {
     flex-grow: 1;
+    max-width: 100%;
 }
 .website .team, .website .sets {
     display: flex;
@@ -106,10 +113,6 @@
 }
 
 /* Names */
-.website .names {
-    flex-grow: 1;
-    overflow: hidden;
-}
 .website .names.won {
     padding-right: 1.5em;
     background: url(check.svg) no-repeat center right;
@@ -130,10 +133,9 @@
     border-radius: 3px;
     box-shadow: 0 0 1px 1px #f8f8f8;
     height: 0.8125em;
-    /* margin: 1.25em 0.5em 0.25em -0.25em; */
     margin: 0;
-    align-self: end;
-    transform: translateX(-0.5em);
+    align-self: center;
+    transform: translate(-0.5em, 0.71875em);  /* 2.25em / 2 - 0.8125em / 2 */
     width: 1.1875em;
 }
 .website .flag:hidden + .first-name {

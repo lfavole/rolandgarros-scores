@@ -1,13 +1,17 @@
 <a class="match" x-show="match_page || show_status == (STATUSES_DISPLAY[matchData.status] || 'finished')" x-data="{ matchData: match.matchData }" :href="match_page ? '#' : '/match/' + match.id" @click="(match_page || editing) && $event.preventDefault()">
     <div class="info-1">
-        <span class="match-type" x-text="matchData.typeLabel"></span>
-        <span class="match-date" x-show="style != 'website' && matchData.dateSchedule" x-text="format_rg_date(matchData.dateSchedule)"></span>
-        <span class="match-night" x-text="matchData.isNightSession ? '🌙' : ''"></span>
+        <span class="left"><!--
+            --><span class="match-type" x-text="matchData.typeLabel"></span><!--
+            --><span class="match-date" x-show="style != 'website' && matchData.dateSchedule" x-text="format_rg_date(matchData.dateSchedule)"></span><!--
+            --><span class="match-night" x-text="matchData.isNightSession ? '🌙' : ''"></span><!--
+        --></span>
         <span class="status" x-text="STATUSES_LABELS[matchData.status || 'FINISHED'] || matchData.status" :class="STATUSES_COLORS[matchData.status || 'FINISHED'] || 'red'"></span>
     </div>
     <div class="info-2">
-        <span class="court-name" x-text="matchData.courtName"></span>
-        <span class="round-label" x-text="matchData.roundLabel"></span>
+        <span class="left"><!--
+            --><span class="court-name" x-text="matchData.courtName"></span><!--
+            --><span class="round-label" x-text="matchData.roundLabel"></span><!--
+        --></span>
         <span class="duration" x-show="matchData.durationInMinutes" x-text="format_duration(matchData.durationInMinutes, style == 'website')"></span>
     </div>
     <div class="message">
