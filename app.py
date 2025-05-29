@@ -4,6 +4,7 @@ import zlib
 from pathlib import Path
 from time import time
 
+import minify_html
 import requests
 from flask import Flask, Response, render_template, request, send_file
 from werkzeug.exceptions import NotFound
@@ -28,6 +29,12 @@ def compress(response: Response):
         # can't get data because it's a stream
         # stop here
         return response
+
+    if response.content_type.split(";")[0] == "text/html":
+        try:
+            content = minify_html.minify(content.decode("utf-8")).encode("utf-8")
+        except:
+            pass
 
     accept_encoding = request.headers.get("Accept-Encoding", "")
 

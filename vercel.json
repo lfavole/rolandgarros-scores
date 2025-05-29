@@ -1,5 +1,4 @@
 {
-    "buildCommand": "python download_alpinejs.py",
     "builds": [
         {
             "src": "app.py",
