@@ -30,7 +30,7 @@ var ENDCAUSES_LABELS = {
     "w/o.": "Forfait",
 };
 function format_rg_date(date) {
-    return date.replace(/^(\d\d\d\d)(\d\d)(\d\d)$/, "$3/$2/$1");
+    return date?.replace(/^(\d\d\d\d)(\d\d)(\d\d)$/, "$3/$2/$1");
 }
 function format_duration(duration, use_h) {
     return Math.floor(duration / 60) + (use_h ? "h" : ":") + (duration % 60 < 10 ? "0": "") + duration % 60;
@@ -179,6 +179,8 @@ function score_point(teamA, teamB, setsNumber) {
             }
             return;
         }
+        lastSetA.tieBreak = teamA.points;
+        lastSetB.tieBreak = teamB.points;
         // fall through (we won the game)
     } else {
         var addPoint = {

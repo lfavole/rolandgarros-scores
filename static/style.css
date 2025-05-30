@@ -4,6 +4,8 @@
 
 body {
     font-family: "Open Sans", Arial, Helvetica, sans-serif;
+    margin: 8px;
+    padding: 0;
 }
 form {
     line-height: 2em;
@@ -25,13 +27,6 @@ p {
     vertical-align: middle;
     animation: rotation 1s linear infinite;
 }
-.opacity {
-    opacity: 1;
-    transition: opacity 0.2s;
-}
-.hidden {
-    opacity: 0;
-}
 @keyframes rotation {
     0% {
         transform: rotate(0deg);
@@ -42,26 +37,27 @@ p {
 }
 
 .outdated {
-    position: fixed;
+    position: sticky;
     left: 0;
     right: 0;
     bottom: 0;
     padding: 0.5em;
+    margin: 0 -8px -8px;
     background-color: #ff8888;
     display: flex;
-}
-.outdated > div {
-    display: flex;
     flex-direction: column;
-    margin: auto;
     text-align: center;
     font-size: 1.25em;
 }
+.outdated > div {
+    flex-grow: 1;
+}
 .outdated .emoji {
+    flex-grow: 0;
     font-size: 1.5em;
 }
 @media (min-width: 501px) {
-    .outdated > div {
+    .outdated {
         flex-direction: row;
         font-size: 2.5em;
     }

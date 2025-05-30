@@ -1,5 +1,5 @@
 from functools import wraps
-from hashlib import md5
+from hashlib import sha1
 from typing import Any
 
 from flask import Response, current_app, request
@@ -27,7 +27,7 @@ def get_hash(obj):
             del hashes[key]
 
     # compute the hash and save it in the dict
-    hash = md5(current_app.json.dumps(obj).encode()).hexdigest()[0:8]
+    hash = sha1(current_app.json.dumps(obj).encode("utf-8")).hexdigest()[0:8]
     hashes[hash] = obj
     return hash
 
@@ -42,10 +42,9 @@ def check_hash(f):
     @wraps(f)
     def decorator(*args, **kwargs):
         ret = f(*args, **kwargs)
-        ret["hash"] = get_hash(ret)
         expected_hash = request.args.get("hash")
 
-        if ret["hash"] == expected_hash:
+        if get_hash(ret) == expected_hash:
             return Response()
 
         if expected_hash and expected_hash in hashes:

@@ -1,4 +1,4 @@
-<a class="match" x-show="match_page || show_status == (STATUSES_DISPLAY[matchData.status] || 'finished')" x-data="{ matchData: match.matchData }" :href="match_page ? '#' : '/match/' + match.id" @click="(match_page || editing) && $event.preventDefault()">
+<a class="match" x-show="match_page_id ? match_id == match_page_id : show_status == (STATUSES_DISPLAY[matchData.status] || 'finished')" x-data="{ get matchData() {return match.matchData} }" :href="'#' + match_id" @click="(match_page_id || editing) && $event.preventDefault()">
     <div class="info-1">
         <span class="left"><!--
             --><span class="match-type" x-text="matchData.typeLabel"></span><!--
@@ -19,11 +19,11 @@
     </div>
     <div class="teams-and-starting-at">
         <div class="teams">
-            <template x-data="{ teams: [match.teamA, match.teamB] }" x-for="(team, i) in teams">
+            <template x-data="{ get teams() {return [match.teamA, match.teamB]} }" x-for="(team, i) in teams">
                 <div class="team">
                     <div class="has-service" x-show="style != 'website'" :class="team.hasService ? 'yes' : ''" x-text="team.hasService ? '//' : ''"></div>
                     <div class="names" :class="winner_class(team, match)">
-                        <template x-data="{ players: team.players }" x-for="player in players">
+                        <template x-for="player in team.players">
                             <div class="name" @click="interval = 0; score_point(team, i ? match.teamA : match.teamB, match.matchData.type == 'SM' ? 3 : 2)"><!--
                                 --><img x-show="style == 'website'" class="player-image" :src="'/static/player/' + player.id + '?s=' + $el.clientWidth"><!--
                                 --><img x-show="style == 'website' && player.country" class="flag" :alt="player.country" :title="player.country" :src="'/static/flag/' + player.country"><!--

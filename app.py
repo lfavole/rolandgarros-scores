@@ -8,13 +8,24 @@ from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 import minify_html
 import requests
-from flask import Flask, Response, render_template, request, send_file
+from flask import Flask, Response, redirect, render_template, request, send_file
+from flask.json.provider import DefaultJSONProvider
 from werkzeug.exceptions import NotFound
 
 from cleanup import cleanup_rg_data  # type: ignore
 from hashing import check_hash  # type: ignore
 
 app = Flask(__name__)
+
+class JSONProvider(DefaultJSONProvider):
+    def dumps(self, *args, **kwargs) -> str:
+        if (self.compact is None and self._app.debug) or self.compact is False:
+            kwargs.setdefault("indent", 2)
+        else:
+            kwargs.setdefault("separators", (",", ":"))
+        return super().dumps(*args, **kwargs)
+
+app.json = JSONProvider(app)
 
 app.json.ensure_ascii = False  # type: ignore
 app.json.compact = True  # type: ignore
@@ -55,7 +66,7 @@ def compress(response: Response):
     return response
 
 
-rg_data = {}  # data from the server
+rg_data: dict | None = None  # data from the server
 rg_data_timestamp = 0  # last polling date  # pylint: disable=C0103
 # minimum polling interval
 POLLING_INTERVAL = int(os.getenv("POLLING_INTERVAL", "5"))
@@ -77,7 +88,7 @@ def get_rg_data(style=None):
         return cleanup_rg_data(rg_data, style)
     except (OSError, ValueError) as err:
         if not rg_data:
-            raise ValueError("Can't fetch Roland Garros data") from err
+            raise ValueError("Can't fetch Roland-Garros data") from err
         return cleanup_rg_data(rg_data, style)
 
 
@@ -141,7 +152,7 @@ def player_image(player_id):
     """Player image"""
     size = request.args.get("s", type=int) or 34  # 2.25em * 16px - border of 2px
 
-    for match in get_rg_data()["matches"]:
+    for match in get_rg_data("all")["matches"].values():
         for team in [match["teamA"], match["teamB"]]:
             for player in team["players"]:
                 if player["id"] == player_id:
@@ -186,34 +197,29 @@ def favicon_ico():
 @app.route("/")
 def index():
     """Homepage with matches list"""
-    return render_template("matches_list.html", match="false")
+    return render_template("base.html", match="false")
 
 
 @app.route("/match/<match_id>")
 def match_page(match_id):
     """Match page"""
-    for match in get_rg_data(request.args.get("style"))["matches"]:
-        if match["id"] == match_id:
-            break
-    else:
-        raise NotFound
-    return render_template("match.html", match="true", match_id=match_id)
+    return redirect("/#" + match_id)
 
 
 @app.route("/polling")
 @check_hash
 def polling():
     """Polling endpoint for the home page"""
-    return get_rg_data(request.args.get("style"))
+    return get_rg_data()
 
 
 @app.route("/polling/match/<match_id>")
 @check_hash
 def polling_match(match_id):
     """Polling endpoint for the match pages"""
-    for match in get_rg_data(request.args.get("style"))["matches"]:
-        if match["id"] == match_id:
-            return {"matches": [match]}
+    for match_id_to_try, match in get_rg_data()["matches"].items():
+        if match_id_to_try == match_id:
+            return match
     raise NotFound
 
 
