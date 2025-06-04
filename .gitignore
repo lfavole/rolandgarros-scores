@@ -103,5 +103,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# Alpine.js file for local development
+# Alpine.js files for local development
 static/cdn.min.js
+static/persist.min.js
