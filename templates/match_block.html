@@ -1,4 +1,4 @@
-<a class="match" x-show="match_page_id ? match_id == match_page_id : show_status == (STATUSES_DISPLAY[matchData.status] || 'finished')" x-data="{ get matchData() {return match.matchData} }" :href="'#' + match_id" @click="(match_page_id || editing) && $event.preventDefault()">
+<a class="match" x-data="{ get matchData() {return match.matchData} }" :href="'#' + match_id" @click="(match_page_id || editing) && $event.preventDefault()">
     <div class="info-1">
         <span class="left"><!--
             --><span class="match-type" x-text="matchData.typeLabel"></span><!--
@@ -48,10 +48,9 @@
                 </div>
             </template>
         </div>
-        <div
-            class="starting-at"
-            x-show="matchData.notBefore || matchData.startingAt"
-            x-text="matchData.notBefore ? 'Pas avant ' + matchData.notBefore : matchData.startingAt ? 'À partir de ' + matchData.startingAt : ''"
-        ></div>
+        <div class="starting-at" x-show="matchData.notBefore || matchData.startingAt">
+            <span x-text="matchData.notBefore ? 'Pas avant' : matchData.startingAt ? 'À partir de' : ''"></span>
+            <span x-text="matchData.notBefore || matchData.startingAt"></span>
+        </div>
     </div>
 </a>

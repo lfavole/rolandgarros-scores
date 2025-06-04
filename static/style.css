@@ -1,4 +1,4 @@
-* {
+*, ::before, ::after {
     box-sizing: border-box;
 }
 
@@ -85,6 +85,8 @@ p {
     color: unset;
     text-decoration: unset;
     padding: 0.75em;
+    display: flex;
+    flex-direction: column;
 }
 .message {
     height: 1em;

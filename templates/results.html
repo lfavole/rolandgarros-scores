@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roland-Garros</title>
+    <link rel="icon" href="/favicon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/results.css">
+    <link rel="stylesheet" href="/static/default.css">
+    <link rel="stylesheet" href="/static/website.css">
+    <link rel="stylesheet" href="/static/tv.css">
+    <script defer src="/static/persist.min.js"></script>
+    <script defer src="/static/cdn.min.js"></script>
+    <script src="/static/script.js"></script>
+    <script src="/static/results.js"></script>
+</head>
+<body x-data="{
+    meta: $persist({}),
+    results_data: $persist({}),
+    results_display: $persist('0'),
+    type: get_type({}),
+    maxRoundsCount: 3,
+    get displayedData() {return getDisplayedData(this.results_data?.[this.type], this.results_display, this.maxRoundsCount)},
+    intv: null,
+    outdated_delay: null,
+    lastUpdate: $persist(0),
+    style: $persist('website'),
+    interval: $persist(5),
+    results_page: true,
+    isThereContent() {return this.displayedData?.length},
+    async reload() {
+        await fetch_data('/polling/results/' + $data.type, $data.results_data[$data.type] ||= [], () => $data.lastUpdate = new Date);
+    },
+}" x-init="
+        await fetch_data('/polling/meta', $data.meta, () => {});
+        setInterval(() => outdated_delay = new Date - new Date(lastUpdate), 1000);
+        get_type($data.meta);
+" x-effect="
+        type;
+        if(intv) {clearInterval(intv); intv = null;}
+        if(interval > 0) {
+            intv = setInterval(reload, interval * 1000);
+            setTimeout(reload);
+        }
+    " @hashchange.window="type = get_type(meta)" :class="style">
+    <a href="/">← Retour à la liste des matchs</a>
+    {% include "settings.html" %}
+    <div>
+        <select x-model="type" x-effect="location.hash = '#' + type" x-init="setTimeout(() => $el.value = $el._x_model.get())">
+            <template x-for="(type, typeLabel) in meta.types">
+                <option :value="typeLabel" x-text="type"></option>
+            </template>
+        </select>
+    </div>
+    <div class="display-selector" x-data="{ get rounds() {return results_data?.[type] || []}, get roundsToDisplay() {return this.rounds.length > maxRoundsCount - 2 ? this.rounds.slice(0, -(maxRoundsCount - 1)) : this.rounds} }" x-show="rounds.length > maxRoundsCount">
+        <template x-for="(round, roundIndex) in roundsToDisplay">
+            <div x-data="{ n: Object.keys(round.matches || {}).length || 0, get buttonsNumber() {return Math.ceil(this.n / 16)} }">
+                <div x-text="round.roundLabel + (roundIndex == roundsToDisplay.length - 1 ? ' + ...' : '')"></div>
+                <template x-for="buttonIndex in buttonsNumber">
+                    <label x-data="{ linesNumber: (buttonsNumber >= 4 ? 3 : buttonsNumber >= 2 ? 5 : n == 16 ? 10 : n == 1 ? 1 : n + 1) }">
+                        <input type="radio" x-model="results_display" :value="roundIndex + (buttonsNumber > 1 ? '_' + (buttonIndex - 1) + '_' + buttonsNumber : '')">
+                        <template x-for="lineIndex in linesNumber">
+                            <hr :style="buttonsNumber == 1 && linesNumber > 1 && lineIndex == linesNumber / 2 + 0.5 ? {border: 'none'} : {}">
+                        </template>
+                    </label>
+                </template>
+            </div>
+        </template>
+    </div>
+    <ul class="results" x-data="{ get startIndex() {return parseDisplay(results_display)[0]} }" :class="startIndex == 0 ? 'start' : startIndex >= displayedData?.length - maxRoundsCount ? 'end' : ''">
+        <template x-for="round in displayedData">
+            <li>
+                <div class="results-header" x-text="round.roundLabel"></div>
+                <ul>
+                    <template x-for="(match, match_id) in round.matches">
+                        <li>
+                            {% include "match_block.html" %}
+                        </li>
+                    </template>
+                </ul>
+            </li>
+        </template>
+    </ul>
+    <p x-show="!displayedData?.length">Aucun match</p>
+    <script>
+        function get_type(meta) {
+            var ret = location.hash?.substr(1) || "SM";
+            document.title = "Tableau " + (meta?.types?.[ret] || ret) + " - Roland-Garros";
+            return ret;
+        }
+    </script>
+</body>
+</html>

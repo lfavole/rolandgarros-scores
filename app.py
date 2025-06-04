@@ -2,13 +2,14 @@ import gzip
 import os
 import subprocess as sp
 import zlib
+from collections import defaultdict
 from pathlib import Path
 from time import time
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 import minify_html
 import requests
-from flask import Flask, Response, redirect, render_template, request, send_file
+from flask import Flask, Response, redirect, render_template, request, send_file, url_for
 from flask.json.provider import DefaultJSONProvider
 from werkzeug.exceptions import NotFound
 
@@ -66,30 +67,28 @@ def compress(response: Response):
     return response
 
 
-rg_data: dict | None = None  # data from the server
+rg_data: dict[str, (dict | None, int)] = defaultdict(lambda: (None, 0))  # data from the server
 rg_data_timestamp = 0  # last polling date  # pylint: disable=C0103
 # minimum polling interval
 POLLING_INTERVAL = int(os.getenv("POLLING_INTERVAL", "5"))
 
 
-def get_rg_data(style=None):
+def get_rg_data(endpoint="polling", style=None):
     """
     Return information from the Roland-Garros server suitable for the given display `style`.
     The data may have been cached.
     """
-    global rg_data, rg_data_timestamp
-    if rg_data is not None and time() - rg_data_timestamp < POLLING_INTERVAL:
-        return cleanup_rg_data(rg_data, style)
+    if rg_data[endpoint][0] is not None and time() - rg_data[endpoint][1] < POLLING_INTERVAL:
+        return cleanup_rg_data(endpoint, rg_data[endpoint][0], style)
 
     try:
-        req = requests.get("https://www.rolandgarros.com/api/fr-fr/polling", timeout=3)
-        rg_data = req.json()
-        rg_data_timestamp = time()
-        return cleanup_rg_data(rg_data, style)
+        req = requests.get("https://www.rolandgarros.com/api/fr-fr/" + endpoint.replace("?meta=1", ""), timeout=3)
+        rg_data[endpoint] = (req.json(), time())
+        return cleanup_rg_data(endpoint, rg_data[endpoint][0], style)
     except (OSError, ValueError) as err:
-        if not rg_data:
+        if rg_data[endpoint][0] is None:
             raise ValueError("Can't fetch Roland-Garros data") from err
-        return cleanup_rg_data(rg_data, style)
+        return cleanup_rg_data(endpoint, rg_data[endpoint][0], style)
 
 
 def proxy(url):
@@ -152,23 +151,21 @@ def player_image(player_id):
     """Player image"""
     size = request.args.get("s", type=int) or 34  # 2.25em * 16px - border of 2px
 
-    for match in get_rg_data("all")["matches"].values():
-        for team in [match["teamA"], match["teamB"]]:
-            for player in team["players"]:
-                if player["id"] == player_id:
-                    try:
-                        if player["imageUrl"]:
-                            parsed_url = urlparse(player["imageUrl"])
-                            query_params = parse_qs(parsed_url.query)
-                            query_params["w"] = [str(size)]
-                            query_params["h"] = [str(size)]
-                            new_query_string = urlencode(query_params, doseq=True)
-                            new_url = urlunparse(parsed_url._replace(query=new_query_string))
+    for player in get_rg_data("players")["players"]:
+        if player["id"] == player_id:
+            try:
+                if player["imageUrl"]:
+                    parsed_url = urlparse(player["imageUrl"])
+                    query_params = parse_qs(parsed_url.query)
+                    query_params["w"] = [str(size)]
+                    query_params["h"] = [str(size)]
+                    new_query_string = urlencode(query_params, doseq=True)
+                    new_url = urlunparse(parsed_url._replace(query=new_query_string))
 
-                            return proxy(new_url)
-                    except (KeyError, NotFound):
-                        pass
-                    return default_player_image(player["sex"])
+                    return proxy(new_url)
+            except (KeyError, NotFound):
+                pass
+            return redirect(url_for("default_player_image", type=player["sex"]))
 
     raise NotFound
 
@@ -206,11 +203,24 @@ def match_page(match_id):
     return redirect("/#" + match_id)
 
 
+@app.route("/results")
+def results():
+    """Results table"""
+    return render_template("results.html")
+
+
 @app.route("/polling")
 @check_hash
 def polling():
     """Polling endpoint for the home page"""
     return get_rg_data()
+
+
+@app.route("/polling/meta")
+@check_hash
+def polling_meta():
+    """Polling endpoint for the metadata"""
+    return get_rg_data("results/SM?meta=1")
 
 
 @app.route("/polling/match/<match_id>")
@@ -221,6 +231,13 @@ def polling_match(match_id):
         if match_id_to_try == match_id:
             return match
     raise NotFound
+
+
+@app.route("/polling/results/<type>")
+@check_hash
+def polling_results(type):
+    """Polling endpoint for the results table"""
+    return get_rg_data(f"results/{type}")
 
 
 if __name__ == "__main__":

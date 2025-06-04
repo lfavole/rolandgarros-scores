@@ -22,10 +22,12 @@
     editing: false,
     intv: null,
     outdated_delay: null,
+    results_page: false,
+    isThereContent() {return Object.keys($data.data.matches).length},
     match_page_id: get_match_id(),
     async reload() {
         var container = $data.match_page_id ? $data.data.matches[$data.match_page_id] || {} : $data.data;
-        await fetch_data($data.match_page_id, container, () => $data.lastUpdate = new Date);
+        await fetch_data('/polling' + ($data.match_page_id ? '/match/' + $data.match_page_id : ''), container, () => $data.lastUpdate = new Date);
         if($data.match_page_id && !$data.data.matches[$data.match_page_id]) $data.data.matches[$data.match_page_id] = container;
     },
 }" x-init="
@@ -38,44 +40,8 @@
         }
     " @hashchange.window="match_page_id = get_match_id()" :class="style">
     <a href="#" x-show="match_page_id">← Retour à la liste des matchs</a>
+    {% include "settings.html" %}
     <p>
-        <span x-text="'Dernière mise à jour : ' + format_date(new Date(lastUpdate))" x-show="Object.keys(data.matches).length"></span>
-        <span x-show="$store.loading" x-transition>Chargement...</span>
-        <span class="loader" x-show="$store.loading" x-transition></span>
-        <template x-teleport="body">
-            <div class="outdated" x-show="interval > 0 && new Date(lastUpdate) && outdated_delay > 30000" x-transition>
-                <div class="emoji">⚠️</div>
-                <div>
-                    Données obsolètes
-                    <span style="white-space: nowrap" x-text="'(' + format_small_duration(outdated_delay / 1000) + ')'"></span>
-                    <br>
-                    Veuillez vous reconnecter à Internet.
-                </div>
-            </div>
-        </template>
-    </p>
-    <form action="javascript:;">
-        <input type="button" value="Effacer les données" @click="clearInterval(intv); localStorage.clear(); location.reload()">
-        Style :
-        <label>
-            <input type="radio" x-model="style" name="style" value="default">
-            Par défaut
-        </label>
-        <label>
-            <input type="radio" x-model="style" name="style" value="website" checked>
-            Site Roland-Garros
-        </label>
-        <label>
-            <input type="radio" x-model="style" name="style" value="tv">
-            TV
-        </label>
-        <br>
-        <label>
-            Intervalle :
-            <input type="number" min="0" step="1" size="5" x-model.number="interval">
-            secondes
-            <span class="paused" x-show="interval <= 0" x-transition>⚠️ En pause</span>
-        </label>
         <span class="status-selector" x-show="!match_page_id">
             <label>
                 <input type="radio" x-model="show_status" name="status" value="finished">
@@ -94,10 +60,10 @@
             Modification :
             <input type="checkbox" x-model="editing">
         </label>
-    </form>
+    </p>
     <p class="matches">
         <template x-for="(match, match_id) in data.matches">
-            {% include "match_block.html" %}
+            <div x-show="match_page_id ? match_id == match_page_id : show_status == (STATUSES_DISPLAY[match.matchData.status] || 'finished')">{% include "match_block.html" %}</div>
         </template>
         <span
             x-show="
@@ -108,63 +74,6 @@
             >Aucun match</span>
     </p>
     <script>
-        // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest#converting_a_digest_to_a_hex_string
-        async function sha1(object) {
-            const msgUint8 = new TextEncoder().encode(object);
-            const hashBuffer = await crypto.subtle.digest("SHA-1", msgUint8);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray
-                .map((b) => b.toString(16).padStart(2, "0"))
-                .join("");
-            return hashHex;
-        }
-        async function fetch_data(match, oldData, updated) {
-            if(Alpine.store("loading")) return;
-            Alpine.store("loading", true);
-            try {
-                var resp = await fetch(
-                    "/polling" + (match ? "/match/" + match : "")
-                    + "?" + new URLSearchParams({hash: (await sha1(JSON.stringify(oldData))).substr(0, 8)})
-                );
-            } finally {
-                Alpine.store("loading", false);
-            }
-            updated();
-            if(resp.status == 404) {
-                location.hash = "#";
-                return;
-            }
-            try {
-                var data = await resp.json();
-                if(!data) return;
-            } catch(e) {return;}
-            if(Array.isArray(data) && (data.length == 1 || data.length == 2)) {
-                function recursive_edit(data, diff, del = false) {
-                    if(!diff) return;
-                    for(key in diff) {
-                        // JSON only has string keys
-                        key = isNaN(+key) ? key : +key;
-                        // https://stackoverflow.com/a/8511350
-                        if(typeof diff[key] == "object" && diff[key] != null) {
-                            recursive_edit(data[key] ||= new diff[key].constructor(), diff[key], del);
-                        } else {
-                            if(del)
-                                delete data[key];
-                            else
-                                data[key] = diff[key];
-                        }
-                    }
-                }
-                recursive_edit(oldData, data[0]);
-                recursive_edit(oldData, data[1], true);
-            } else {
-                for(var key in data)
-                    oldData[key] = data[key];
-                for(var key in oldData)
-                    if(!(key in data))
-                        delete oldData[key];
-            }
-        }
         function get_match_id() {
             var ret = location.hash?.substr(1);
             document.title = (ret ? "Match" : "Liste des matchs") + " - Roland-Garros";

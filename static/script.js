@@ -29,6 +29,62 @@ var ENDCAUSES_LABELS = {
     "d.": "Disqualifié",
     "w/o.": "Forfait",
 };
+// https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest#converting_a_digest_to_a_hex_string
+async function sha1(object) {
+    const msgUint8 = new TextEncoder().encode(object);
+    const hashBuffer = await crypto.subtle.digest("SHA-1", msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+    return hashHex;
+}
+async function fetch_data(url, oldData, updatedCallback) {
+    if(Alpine.store("loading")) return;
+    Alpine.store("loading", true);
+    try {
+        var resp = await fetch(
+            url + "?" + new URLSearchParams({hash: (await sha1(JSON.stringify(oldData))).substring(0, 8)})
+        );
+    } finally {
+        Alpine.store("loading", false);
+    }
+    updatedCallback();
+    if(resp.status == 404) {
+        location.hash = "#";
+        return;
+    }
+    try {
+        var data = await resp.json();
+        if(!data) return;
+    } catch(e) {return;}
+    if(data._a) {
+        function recursive_edit(data, diff, del = false) {
+            if(!diff) return;
+            for(key in diff) {
+                // JSON only has string keys
+                key = isNaN(+key) ? key : +key;
+                // https://stackoverflow.com/a/8511350
+                if(typeof diff[key] == "object" && diff[key] != null) {
+                    recursive_edit(data[key] ||= new diff[key].constructor(), diff[key], del);
+                } else {
+                    if(del)
+                        delete data[key];
+                    else
+                        data[key] = diff[key];
+                }
+            }
+        }
+        recursive_edit(oldData, data._a);
+        recursive_edit(oldData, data._d, true);
+    } else {
+        for(var key in data)
+            oldData[key] = data[key];
+        for(var key in oldData)
+            if(!(key in data))
+                delete oldData[key];
+    }
+}
 function format_rg_date(date) {
     return date?.replace(/^(\d\d\d\d)(\d\d)(\d\d)$/, "$3/$2/$1");
 }

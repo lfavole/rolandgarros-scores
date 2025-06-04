@@ -28,7 +28,7 @@ self.addEventListener("fetch", async evt => {
 		// (in development, files change and mustn't be cached)
 		if(VERSION != "dev") {
 			var cachedResponse = await fetchFromCache(request);
-			if(cachedResponse) return cachedResponse;
+			if(cachedResponse && cachedResponse.status != "opaqueredirect") return cachedResponse;
 		}
 		try {
 			var response = await fetch(request);

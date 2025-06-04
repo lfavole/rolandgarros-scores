@@ -1,0 +1,45 @@
+<details>
+    <summary>Paramètres</summary>
+    <p>
+        <span x-text="'Dernière mise à jour : ' + format_date(new Date(lastUpdate))" x-show="isThereContent()"></span>
+        <span x-show="$store.loading" x-transition>Chargement...</span>
+        <span class="loader" x-show="$store.loading" x-transition></span>
+        <template x-teleport="body">
+            <div class="outdated" x-show="interval > 0 && new Date(lastUpdate) && outdated_delay > 30000" x-transition>
+                <div class="emoji">⚠️</div>
+                <div>
+                    Données obsolètes
+                    <span style="white-space: nowrap" x-text="'(' + format_small_duration(outdated_delay / 1000) + ')'"></span>
+                    <br>
+                    Veuillez vous reconnecter à Internet.
+                </div>
+            </div>
+        </template>
+    </p>
+    <p>
+        <input type="button" value="Effacer les données" @click="clearInterval(intv); localStorage.clear(); location.reload()">
+    </p>
+    <p>
+        Style :
+        <label>
+            <input type="radio" x-model="style" name="style" value="default">
+            Par défaut
+        </label>
+        <label>
+            <input type="radio" x-model="style" name="style" value="website" checked>
+            Site Roland-Garros
+        </label>
+        <label>
+            <input type="radio" x-model="style" name="style" value="tv">
+            TV
+        </label>
+    </p>
+    <p>
+        <label>
+            Intervalle :
+            <input type="number" min="0" step="1" size="5" x-model.number="interval">
+            secondes
+            <span class="paused" x-show="interval <= 0" x-transition>⚠️ En pause</span>
+        </label>
+    </p>
+</details>
