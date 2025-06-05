@@ -79,6 +79,9 @@
 .website .duration {
     margin-left: auto;
 }
+.website .round-label {
+    margin-right: 0.3em;
+}
 .website .round-label::before {
     content: "-";
     margin: 0 0.3em;
