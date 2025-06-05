@@ -27,7 +27,7 @@
     match_page_id: get_match_id(),
     async reload() {
         var container = $data.match_page_id ? $data.data.matches[$data.match_page_id] || {} : $data.data;
-        await fetch_data('/polling' + ($data.match_page_id ? '/match/' + $data.match_page_id : ''), container, () => $data.lastUpdate = new Date);
+        await fetch_data('/api/' + ($data.match_page_id ? 'match/' + $data.match_page_id : 'polling'), container, () => $data.lastUpdate = new Date);
         if($data.match_page_id && !$data.data.matches[$data.match_page_id]) $data.data.matches[$data.match_page_id] = container;
     },
 }" x-init="
@@ -61,7 +61,7 @@
             <input type="checkbox" x-model="editing">
         </label>
     </p>
-    <p class="matches">
+    <p class="matches" x-data="{ matchesToDisplay: Object.fromEntries(Object.entries(data.matches).filter(match => match_page_id || show_status == STATUSES_DISPLAY[match.matchData?.status] || 'finished')) }">
         <template x-for="(match, match_id) in data.matches">
             <div x-show="match_page_id ? match_id == match_page_id : show_status == (STATUSES_DISPLAY[match.matchData.status] || 'finished')">{% include "match_block.html" %}</div>
         </template>

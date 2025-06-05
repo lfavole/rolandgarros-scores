@@ -203,27 +203,7 @@ def match_page(match_id):
     return redirect("/#" + match_id)
 
 
-@app.route("/results")
-def results():
-    """Results table"""
-    return render_template("results.html")
-
-
-@app.route("/polling")
-@check_hash
-def polling():
-    """Polling endpoint for the home page"""
-    return get_rg_data()
-
-
-@app.route("/polling/meta")
-@check_hash
-def polling_meta():
-    """Polling endpoint for the metadata"""
-    return get_rg_data("results/SM?meta=1")
-
-
-@app.route("/polling/match/<match_id>")
+@app.route("/api/match/<match_id>")
 @check_hash
 def polling_match(match_id):
     """Polling endpoint for the match pages"""
@@ -233,7 +213,35 @@ def polling_match(match_id):
     raise NotFound
 
 
-@app.route("/polling/results/<type>")
+@app.route("/api/meta")
+@check_hash
+def polling_meta():
+    """Polling endpoint for the metadata"""
+    return get_rg_data("results/SM?meta=1")
+
+
+@app.route("/api/order-of-play")
+@check_hash
+def polling_order_of_play():
+    """Polling endpoint for the metadata"""
+    return get_rg_data("order-of-play")
+    # < 75 = orange
+
+
+@app.route("/api/polling")
+@check_hash
+def polling():
+    """Polling endpoint for the home page"""
+    return get_rg_data()
+
+
+@app.route("/results")
+def results():
+    """Results table"""
+    return render_template("results.html")
+
+
+@app.route("/api/results/<type>")
 @check_hash
 def polling_results(type):
     """Polling endpoint for the results table"""

@@ -6,7 +6,7 @@
 }
 
 /* Metadata */
-.tv .message {
+.tv .message-and-excitement-rate {
     height: calc(1.5em + 1px);
 }
 .tv .message span {
@@ -19,6 +19,9 @@
 .tv .message span:empty {
     background: none;
     border: none;
+}
+.tv .excitement-rate {
+    display: none;
 }
 
 /* Teams */

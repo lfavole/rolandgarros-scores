@@ -30,10 +30,10 @@
     results_page: true,
     isThereContent() {return this.displayedData?.length},
     async reload() {
-        await fetch_data('/polling/results/' + $data.type, $data.results_data[$data.type] ||= [], () => $data.lastUpdate = new Date);
+        await fetch_data('/api/results/' + $data.type, $data.results_data[$data.type] ||= [], () => $data.lastUpdate = new Date);
     },
 }" x-init="
-        await fetch_data('/polling/meta', $data.meta, () => {});
+        await fetch_data('/api/meta', $data.meta, () => {});
         setInterval(() => outdated_delay = new Date - new Date(lastUpdate), 1000);
         get_type($data.meta);
 " x-effect="

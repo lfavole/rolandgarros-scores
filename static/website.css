@@ -64,6 +64,8 @@
     margin-left: auto;
     text-align: center;
     text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 .website .court-name {
     color: #5b5b5b;
@@ -80,6 +82,44 @@
 .website .round-label::before {
     content: "-";
     margin: 0 0.3em;
+}
+.website .message:has(span:not(:empty)) + .excitement-rate {
+    margin-left: 0.3em;
+}
+.website .message {
+    white-space: nowrap;
+}
+.website .excitement-rate {
+    overflow: hidden;
+}
+.website .excitement-rate > span:first-of-type {
+    flex-shrink: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 1.3em;
+    height: 100%;
+    background: url(excitement.svg) no-repeat center right;
+    background-size: contain;
+}
+.website .excitement-rate > span:first-of-type:empty {
+    padding-right: 1em;
+}
+.website .progress {
+    margin: 0 0.3em;
+    height: 0.5em;
+}
+.website .progress, .website .progress span {
+    border-radius: 1em;
+}
+.website .excitement-rate .progress.low span {
+    background-color: orange;
+}
+.website .excitement-rate .progress.high span {
+    background-color: green;
+}
+.website .excitement-rate > span:last-of-type {
+    font-weight: bold;
 }
 .website .teams-and-starting-at {
     display: flex;
@@ -121,6 +161,7 @@
 .website .names.won {
     padding-right: 1.5em;
     background: url(check.svg) no-repeat center right;
+    background-size: contain;
 }
 .website .name {
     font-weight: bold;
@@ -183,6 +224,7 @@
 .website .has-service.yes {
     color: transparent;
     background: url(ball.svg) center no-repeat;
+    background-size: contain;
 }
 .website .set {
     font-weight: bold;

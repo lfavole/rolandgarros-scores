@@ -14,8 +14,15 @@
         --></span>
         <span class="duration" x-show="matchData.durationInMinutes" x-text="format_duration(matchData.durationInMinutes, style == 'website')"></span>
     </div>
-    <div class="message">
-        <span x-text="get_match_status(matchData, match.teamA, match.teamB, matchData.type == 'SM' ? 3 : 2)"></span>
+    <div class="message-and-excitement-rate" x-data="{ message: get_match_status(matchData, match.teamA, match.teamB, matchData.type == 'SM' ? 3 : 2) }">
+        <div class="message">
+            <span x-text="message"></span>
+        </div>
+        <div class="excitement-rate" x-show="match.excitementRate">
+            <span x-text="message ? '' : 'Intérêt du match'"></span>
+            <span class="progress" :class="match.excitementRate < 75 ? 'low' : 'high'"><span :style="{ width: (match.excitementRate || 0) + '%' }"></span></span>
+            <span x-text="match.excitementRate + '%'"></span>
+        </div>
     </div>
     <div class="teams-and-starting-at">
         <div class="teams">

@@ -10,6 +10,10 @@
 .default .blue {
     color: blue;
 }
+.default :is(.info-1, .info-2, .message-and-excitement-rate) > * > span:not(:empty),
+.default .starting-at span:first-of-type:not(:empty) {
+    margin-right: 0.3em;
+}
 .default .rank, .default .entry-status, .default .tie-break {
     vertical-align: super;
     font-size: smaller;

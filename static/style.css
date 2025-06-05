@@ -88,9 +88,30 @@ p {
     display: flex;
     flex-direction: column;
 }
-.message {
+.message-and-excitement-rate {
     height: 1em;
     display: flex;
+}
+.message, .excitement-rate {
+    display: flex;
+    align-items: center;
+}
+.excitement-rate {
+    flex-grow: 1;
+}
+.progress, .progress span {
+    display: inline-block;
+}
+.progress {
+    flex-grow: 1;
+    display: flex;
+    min-width: 3em;
+    height: 1em;
+    border: 1px solid black;
+}
+.progress span {
+    background-color: blue;
+    height: 100%;
 }
 .team, .sets {
     display: flex;
