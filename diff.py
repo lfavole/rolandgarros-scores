@@ -69,10 +69,13 @@ def get_diff(obj1, obj2):
                             diff_l[key] = list(diff_l[key].values())
 
             elif item1 != item2:
-                # the object is different, edit it
+                # the object is different, remove the wrong copy and edit it
+                diff[1][key] = 2  # replaced
                 diff[0][key] = item2
 
     recursive_diff(obj1, obj2, ret)
     if not ret[1]:
+        if not ret[0]:
+            return {}
         return {"_a": ret[0]}
     return {"_a": ret[0], "_d": ret[1]}

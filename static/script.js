@@ -39,13 +39,26 @@ async function sha1(object) {
         .join("");
     return hashHex;
 }
-async function fetch_data(url, oldData, updatedCallback) {
+async function objectHash(data) {
+    return (await sha1(JSON.stringify(data))).substring(0, 8);
+}
+async function fetch_data(url, oldData, updatedCallback, keepFirstProperties = false, only = false) {
     if(Alpine.store("loading")) return;
     Alpine.store("loading", true);
+
+    var usp = new URLSearchParams();
+    if(only) usp.append("only", 1);
+    if(!keepFirstProperties) {
+        usp.append("hash", await objectHash(oldData));
+    } else {
+        for(var prop in oldData) {
+            if(Array.isArray(keepFirstProperties) ? keepFirstProperties.includes(prop) : true)
+                usp.append("hash." + prop, await objectHash(oldData[prop]));
+        }
+    }
+
     try {
-        var resp = await fetch(
-            url + "?" + new URLSearchParams({hash: (await sha1(JSON.stringify(oldData))).substring(0, 8)})
-        );
+        var resp = await fetch(url + "?" + usp);
     } finally {
         Alpine.store("loading", false);
     }
@@ -59,31 +72,40 @@ async function fetch_data(url, oldData, updatedCallback) {
         if(!data) return;
     } catch(e) {return;}
     if(data._a) {
-        function recursive_edit(data, diff, del = false) {
+        function recursive_edit(data, diff, del = false, first = true) {
             if(!diff) return;
             for(key in diff) {
                 // JSON only has string keys
                 key = isNaN(+key) ? key : +key;
                 // https://stackoverflow.com/a/8511350
                 if(typeof diff[key] == "object" && diff[key] != null) {
-                    recursive_edit(data[key] ||= new diff[key].constructor(), diff[key], del);
+                    recursive_edit(data[key] ||= new diff[key].constructor(), diff[key], del, false);
                 } else {
-                    if(del)
-                        delete data[key];
-                    else
+                    if(del) {
+                        if(diff[key] == 2)
+                            data[key] = {};
+                        else if(keepFirstProperties && first) {}
+                        else delete data[key];
+                    } else {
                         data[key] = diff[key];
+                    }
                 }
             }
         }
-        recursive_edit(oldData, data._a);
         recursive_edit(oldData, data._d, true);
+        recursive_edit(oldData, data._a);
     } else {
         for(var key in data)
             oldData[key] = data[key];
-        for(var key in oldData)
-            if(!(key in data))
-                delete oldData[key];
+        if(!keepFirstProperties) {
+            for(var key in oldData)
+                if(!(key in data))
+                    delete oldData[key];
+        }
     }
+}
+function get_rg_date(date) {
+    return date.toISOString().replace(/^(\d{4})-(\d{2})-(\d{2})T.*$/, "$1$2$3")
 }
 function format_rg_date(date) {
     return date?.replace(/^(\d\d\d\d)(\d\d)(\d\d)$/, "$3/$2/$1");

@@ -18,6 +18,9 @@ def get_hash(obj):
     # check if the hash is known
     for hash, test_obj in hashes.items():
         if test_obj == obj:
+            # re-set the key to prevent it from being cleaned up
+            del hashes[hash]
+            hashes[hash] = test_obj
             return hash
 
     # clean up the hashes dict if there are too much
@@ -44,12 +47,35 @@ def check_hash(f):
         ret = f(*args, **kwargs)
         expected_hash = request.args.get("hash")
 
-        if get_hash(ret) == expected_hash:
-            return Response()
+        # Cache hashes
+        _ = get_hash(ret)
+        if "polling" in request.url:
+            for key in ret:
+                _ = get_hash(ret[key])
 
         if expected_hash and expected_hash in hashes:
-            return get_diff(hashes[expected_hash], ret)
+            client_data = hashes[expected_hash]
+        else:
+            client_data = {}
+            for arg, value in request.args.items():
+                if not arg.startswith("hash."):
+                    continue
+                key = arg[5:]
+                # The client has something, but we don't know what
+                client_data[key] = object()
+                # If the key is not present, don't bother calculating the hash
+                if key not in ret:
+                    continue
+                if value in hashes:
+                    # The client has something that we know (i.e. that we had)
+                    client_data[key] = hashes[value]
 
-        return ret
+        if not client_data:
+            return ret
+
+        if request.args.get("only"):
+            ret = {key: value for key, value in ret.items() if key in client_data}
+
+        return get_diff(client_data, ret) or Response()
 
     return decorator

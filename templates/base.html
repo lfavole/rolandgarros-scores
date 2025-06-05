@@ -14,8 +14,9 @@
     <script src="/static/script.js"></script>
 </head>
 <body x-data="{
-    data: $persist({matches: {}}),
+    matches: $persist({}),
     lastUpdate: $persist(0),
+    now: new Date,
     style: $persist('website'),
     show_status: $persist('live'),
     interval: $persist(5),
@@ -23,22 +24,24 @@
     intv: null,
     outdated_delay: null,
     results_page: false,
-    isThereContent() {return Object.keys($data.data.matches).length},
+    isThereContent() {return Object.keys($data.matches).length},
     match_page_id: get_match_id(),
     async reload() {
-        var container = $data.match_page_id ? $data.data.matches[$data.match_page_id] || {} : $data.data;
-        await fetch_data('/api/' + ($data.match_page_id ? 'match/' + $data.match_page_id : 'polling'), container, () => $data.lastUpdate = new Date);
-        if($data.match_page_id && !$data.data.matches[$data.match_page_id]) $data.data.matches[$data.match_page_id] = container;
+        await fetch_data('/api/polling', $data.matches, () => $data.lastUpdate = new Date, Object.keys($data.matchesToDisplay), true);
+    },
+    get matchesToDisplay() {
+        return Object.fromEntries(Object.entries($data.matches).filter(([id, match]) => $data.match_page_id ? id == $data.match_page_id : $data.show_status == (STATUSES_DISPLAY[match.matchData?.status] || 'finished') && match.matchData?.dateSchedule == get_rg_date($data.now)));
     },
 }" x-init="
         setInterval(() => outdated_delay = new Date - new Date(lastUpdate), 1000);
+        setInterval(() => now = new Date, 1000);
 " x-effect="
         if(intv) {clearInterval(intv); intv = null;}
         if(interval > 0) {
             intv = setInterval(reload, interval * 1000);
             setTimeout(reload);
         }
-    " @hashchange.window="match_page_id = get_match_id()" :class="style">
+    " @hashchange.window="match_page_id = get_match_id()" :class="style + (match_page_id ? ' match-page' : '')">
     <a href="#" x-show="match_page_id">← Retour à la liste des matchs</a>
     {% include "settings.html" %}
     <p>
@@ -61,17 +64,11 @@
             <input type="checkbox" x-model="editing">
         </label>
     </p>
-    <p class="matches" x-data="{ matchesToDisplay: Object.fromEntries(Object.entries(data.matches).filter(match => match_page_id || show_status == STATUSES_DISPLAY[match.matchData?.status] || 'finished')) }">
-        <template x-for="(match, match_id) in data.matches">
-            <div x-show="match_page_id ? match_id == match_page_id : show_status == (STATUSES_DISPLAY[match.matchData.status] || 'finished')">{% include "match_block.html" %}</div>
+    <p class="matches">
+        <template x-for="(match, match_id) in matchesToDisplay">
+            <div>{% include "match_block.html" %}</div>
         </template>
-        <span
-            x-show="
-                !Object.values(data.matches || {}).some(
-                    match => match_page_id || show_status == (STATUSES_DISPLAY[match.matchData.status] || 'finished')
-                )
-            "
-            >Aucun match</span>
+        <span x-show="!Object.keys(matchesToDisplay).length">Aucun match</span>
     </p>
     <script>
         function get_match_id() {

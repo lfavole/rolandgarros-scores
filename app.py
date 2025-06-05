@@ -232,7 +232,7 @@ def polling_order_of_play():
 @check_hash
 def polling():
     """Polling endpoint for the home page"""
-    return get_rg_data()
+    return get_rg_data()["matches"]
 
 
 @app.route("/results")
